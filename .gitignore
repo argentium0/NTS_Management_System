@@ -1,0 +1,5 @@
+target/
+out/
+.idea/
+*.class
+PAT_antigravity_github.txt

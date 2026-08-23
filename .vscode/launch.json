@@ -1,0 +1,25 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Launch NTS JavaFX (Launcher)",
+            "request": "launch",
+            "mainClass": "oopProject.Launcher",
+            "vmArgs": "--module-path \"C:/Users/Global Computers/.m2/repository/org/openjfx/javafx-controls/22.0.2;C:/Users/Global Computers/.m2/repository/org/openjfx/javafx-base/22.0.2;C:/Users/Global Computers/.m2/repository/org/openjfx/javafx-graphics/22.0.2;C:/Users/Global Computers/.m2/repository/org/openjfx/javafx-fxml/22.0.2\" --add-modules javafx.controls,javafx.fxml"
+        },
+        {
+            "type": "java",
+            "name": "Launch NTS JavaFX (NTSApp)",
+            "request": "launch",
+            "mainClass": "oopProject.NTSApp",
+            "vmArgs": "--module-path \"C:/Users/Global Computers/.m2/repository/org/openjfx/javafx-controls/22.0.2;C:/Users/Global Computers/.m2/repository/org/openjfx/javafx-base/22.0.2;C:/Users/Global Computers/.m2/repository/org/openjfx/javafx-graphics/22.0.2;C:/Users/Global Computers/.m2/repository/org/openjfx/javafx-fxml/22.0.2\" --add-modules javafx.controls,javafx.fxml"
+        },
+        {
+            "type": "java",
+            "name": "Launch Legacy Console System",
+            "request": "launch",
+            "mainClass": "oopProject.NTSManagementSystem"
+        }
+    ]
+}

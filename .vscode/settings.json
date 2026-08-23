@@ -1,0 +1,12 @@
+{
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "java.project.sourcePaths": [
+        "src/main/java"
+    ],
+    "terminal.integrated.env.windows": {
+        "PATH": "${env:PATH};C:\\Users\\Global Computers\\.antigravity-ide\\extensions\\oracle.oracle-java-26.0.2-universal\\nbcode\\java\\maven\\bin"
+    },
+    "css.validate": false,
+    "css.lint.vendorPrefix": "ignore",
+    "css.lint.unknownVendorSpecificProperties": "ignore"
+}
