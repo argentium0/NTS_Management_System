@@ -6,3 +6,4 @@ out/
 *.db-wal
 *.db-shm
 PAT_antigravity_github.txt
+dependency-reduced-pom.xml
