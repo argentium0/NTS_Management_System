@@ -18,7 +18,7 @@ import javafx.stage.Stage;
  */
 public class AdminDashboard extends VBox {
 
-    private static String activeAdminUsername = "admin";
+    private static final String activeAdminUsername = "admin";
     private static String activeAdminPassword = "admin123";
 
     private final TableView<AllocationRecord> allocationTable;

@@ -4,10 +4,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Line;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 /**
  * CandidateLoginView constructs the authentic NTS Candidate Portal login and entry interface.
