@@ -2,6 +2,7 @@ package oopProject;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 import java.net.URL;
@@ -27,7 +28,20 @@ public class NTSApp extends Application {
             System.err.println("[NTSApp] Warning: styles.css not found in package directory.");
         }
 
-        // Configure Primary Stage
+        // Configure Primary Stage Window Taskbar Icon
+        try {
+            URL iconResource = getClass().getResource("logo.png");
+            if (iconResource == null) {
+                iconResource = getClass().getResource("/logo.png");
+            }
+            if (iconResource != null) {
+                primaryStage.getIcons().add(new Image(iconResource.toExternalForm()));
+            }
+        } catch (Exception e) {
+            System.err.println("[NTSApp] Note: Unable to load window icon: " + e.getMessage());
+        }
+
+        // Configure Primary Stage Window
         primaryStage.setTitle("NTS Management System - Desktop Portal");
         primaryStage.setScene(scene);
         primaryStage.setMinWidth(1024);

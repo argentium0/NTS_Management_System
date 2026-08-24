@@ -41,9 +41,22 @@ public class CandidateLoginView extends StackPane {
         cardContainer.setPadding(new Insets(36, 32, 36, 32));
         cardContainer.setStyle("-fx-background-color: #FFFFFF; -fx-border-color: #E2E8F0; -fx-border-width: 1px; -fx-border-radius: 4px; -fx-background-radius: 4px;");
 
-        // 1. Header: Large text reading "Candidate Portal" in NTS Action Orange
-        VBox headerBox = new VBox(6);
+        // 1. Header: NTS Logo & Title reading "Candidate Portal"
+        VBox headerBox = new VBox(8);
         headerBox.setAlignment(Pos.CENTER);
+
+        try {
+            java.net.URL logoUrl = getClass().getResource("logo.png");
+            if (logoUrl == null) {
+                logoUrl = getClass().getResource("/logo.png");
+            }
+            if (logoUrl != null) {
+                javafx.scene.image.ImageView logoView = new javafx.scene.image.ImageView(new javafx.scene.image.Image(logoUrl.toExternalForm()));
+                logoView.setFitHeight(54);
+                logoView.setPreserveRatio(true);
+                headerBox.getChildren().add(logoView);
+            }
+        } catch (Exception ignored) {}
 
         Label subHeader = new Label("NATIONAL TESTING SERVICE PAKISTAN");
         subHeader.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: #2A4D7C; -fx-letter-spacing: 1px;");

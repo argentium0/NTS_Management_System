@@ -3,10 +3,15 @@ package oopProject;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+
+import java.net.URL;
 
 /**
  * MainLayout constructs the JavaFX UI Shell for the NTS Management System.
+ * Displays the official NTS logo prominently across the application header, sidebar, and window taskbar.
  * Enforces strict authentication access control:
  * - All feature views remain locked until successful Admin login.
  * - Sidebar navigation items are disabled when unauthenticated.
@@ -74,9 +79,23 @@ public class MainLayout {
     }
 
     private Node createTopBar() {
-        HBox topBar = new HBox();
+        HBox topBar = new HBox(14);
         topBar.getStyleClass().add("top-bar");
         topBar.setAlignment(Pos.CENTER_LEFT);
+
+        // Header Brand Emblem Logo
+        try {
+            URL logoUrl = getClass().getResource("logo.png");
+            if (logoUrl == null) {
+                logoUrl = getClass().getResource("/logo.png");
+            }
+            if (logoUrl != null) {
+                ImageView logoView = new ImageView(new Image(logoUrl.toExternalForm()));
+                logoView.setFitHeight(32);
+                logoView.setPreserveRatio(true);
+                topBar.getChildren().add(logoView);
+            }
+        } catch (Exception ignored) {}
 
         VBox titleBox = new VBox(2);
         pageTitleLabel = new Label("Dashboard");
@@ -106,8 +125,22 @@ public class MainLayout {
         VBox sidebar = new VBox();
         sidebar.getStyleClass().add("sidebar");
 
-        VBox brandBox = new VBox();
+        VBox brandBox = new VBox(6);
         brandBox.getStyleClass().add("sidebar-header");
+
+        // Top Sidebar Official Brand Logo
+        try {
+            URL logoUrl = getClass().getResource("logo.png");
+            if (logoUrl == null) {
+                logoUrl = getClass().getResource("/logo.png");
+            }
+            if (logoUrl != null) {
+                ImageView logoView = new ImageView(new Image(logoUrl.toExternalForm()));
+                logoView.setFitHeight(44);
+                logoView.setPreserveRatio(true);
+                brandBox.getChildren().add(logoView);
+            }
+        } catch (Exception ignored) {}
 
         Label brandLabel = new Label("NTS PORTAL");
         brandLabel.getStyleClass().add("sidebar-brand");
@@ -187,7 +220,6 @@ public class MainLayout {
     private void updateAuthStateUI() {
         boolean isAuth = controller.isAuthenticated();
 
-        // Lock / Unlock Protected Navigation Items
         btnAdminDashboard.setDisable(!isAuth);
         btnCandidates.setDisable(!isAuth);
         btnStaff.setDisable(!isAuth);

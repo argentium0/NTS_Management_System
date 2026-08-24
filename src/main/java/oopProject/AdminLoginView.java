@@ -3,11 +3,16 @@ package oopProject;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+
+import java.net.URL;
 
 /**
  * AdminLoginView provides a flat, minimalist administrator login interface.
  * Adheres strictly to NTS Brand Aesthetics (Navy #2A4D7C and Action Orange #F28221).
+ * Features the official NTS brand logo.
  */
 public class AdminLoginView extends VBox {
 
@@ -33,9 +38,22 @@ public class AdminLoginView extends VBox {
         card.getStyleClass().add("flat-card");
         card.setPadding(new Insets(32));
 
-        // Header Title & Subtitle
-        VBox titleBox = new VBox(6);
+        // Header Title & Subtitle with Official NTS Logo
+        VBox titleBox = new VBox(8);
         titleBox.setAlignment(Pos.CENTER);
+
+        try {
+            URL logoUrl = getClass().getResource("logo.png");
+            if (logoUrl == null) {
+                logoUrl = getClass().getResource("/logo.png");
+            }
+            if (logoUrl != null) {
+                ImageView logoView = new ImageView(new Image(logoUrl.toExternalForm()));
+                logoView.setFitHeight(54);
+                logoView.setPreserveRatio(true);
+                titleBox.getChildren().add(logoView);
+            }
+        } catch (Exception ignored) {}
 
         Label lblBrand = new Label("NTS ADMIN PORTAL");
         lblBrand.setStyle("-fx-font-size: 20px; -fx-font-weight: bold; -fx-text-fill: #2A4D7C;");
