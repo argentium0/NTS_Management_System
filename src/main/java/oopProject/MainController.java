@@ -10,7 +10,7 @@ import java.util.Map;
 
 /**
  * Controller responsible for view routing, sidebar state management,
- * and header title updates in the NTS JavaFX Desktop Application.
+ * authentication access control, and header title updates.
  */
 public class MainController {
 
@@ -22,11 +22,39 @@ public class MainController {
     private final Map<String, Node> viewRegistry = new HashMap<>();
 
     private Button activeNavButton;
+    private boolean authenticated = false;
+    private String authenticatedUser = null;
+    private Runnable authStateChangeListener;
 
     public MainController(StackPane contentArea, Label pageTitleLabel, Label pageSubtitleLabel) {
         this.contentArea = contentArea;
         this.pageTitleLabel = pageTitleLabel;
         this.pageSubtitleLabel = pageSubtitleLabel;
+    }
+
+    public boolean isAuthenticated() {
+        return authenticated;
+    }
+
+    public String getAuthenticatedUser() {
+        return authenticatedUser;
+    }
+
+    public void setAuthStateChangeListener(Runnable listener) {
+        this.authStateChangeListener = listener;
+    }
+
+    public void setAuthenticated(boolean status, String username) {
+        this.authenticated = status;
+        this.authenticatedUser = status ? username : null;
+        if (authStateChangeListener != null) {
+            authStateChangeListener.run();
+        }
+    }
+
+    public void logout() {
+        setAuthenticated(false, null);
+        navigateTo("admin_login");
     }
 
     public void registerNavButton(String routeKey, Button button) {
@@ -39,6 +67,12 @@ public class MainController {
     }
 
     public void navigateTo(String routeKey) {
+        // Enforce Authentication Access Control Gatekeeping
+        if (!"admin_login".equalsIgnoreCase(routeKey) && !authenticated) {
+            DialogHelper.showError("Access Denied", "Authentication Required", "Administrative authentication is required to access system features. Please log in first.");
+            routeKey = "admin_login";
+        }
+
         Node targetView = viewRegistry.get(routeKey);
         if (targetView == null) {
             System.err.println("[MainController] View not registered for route: " + routeKey);
@@ -63,12 +97,12 @@ public class MainController {
 
     private void updateHeaderTitles(String routeKey) {
         switch (routeKey.toLowerCase()) {
-            case "admin_login" -> setHeaderTitle("Admin Authentication", "Administrator Sign-In & Verification");
-            case "admin_dashboard" -> setHeaderTitle("Admin Dashboard", "System Overview & Settings");
-            case "candidates" -> setHeaderTitle("Candidate Portal", "Mapped to Person -> Candidate Architecture");
-            case "staff" -> setHeaderTitle("Staff Management", "Mapped to Person -> Employee -> Invigilator/Superintendent");
-            case "test_mgmt" -> setHeaderTitle("Test Management", "Mapped to Test Entity Architecture");
-            case "test_centres" -> setHeaderTitle("Test Centre Allocation", "Mapped to TestCentre Entity & Team Management");
+            case "admin_login" -> setHeaderTitle("Admin Authentication", "Administrative Sign-In & Entry Gateway");
+            case "admin_dashboard" -> setHeaderTitle("Admin Dashboard", "Executive Overview & Security Settings");
+            case "candidates" -> setHeaderTitle("Candidate Portal", "Student Registration & Test Applications");
+            case "staff" -> setHeaderTitle("Staff Management", "Invigilator & Superintendent Duty Allocation");
+            case "test_mgmt" -> setHeaderTitle("Test Management", "NTS Exam Catalog & Configuration");
+            case "test_centres" -> setHeaderTitle("Test Centre Allocation", "Venue Operations & Duty Team Assignments");
             default -> setHeaderTitle("NTS Portal", "National Testing Service Administration");
         }
     }

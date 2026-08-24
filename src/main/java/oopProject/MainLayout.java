@@ -7,8 +7,10 @@ import javafx.scene.layout.*;
 
 /**
  * MainLayout constructs the JavaFX UI Shell for the NTS Management System.
- * Connects the Admin Authentication, Candidate Portal, Staff Management, Test Management,
- * and Test Centre Allocation views mapped 1:1 to UML class architecture.
+ * Enforces strict authentication access control:
+ * - All feature views remain locked until successful Admin login.
+ * - Sidebar navigation items are disabled when unauthenticated.
+ * - Includes a dedicated Logout handler and dynamic authentication state updates.
  */
 public class MainLayout {
 
@@ -18,6 +20,16 @@ public class MainLayout {
 
     private Label pageTitleLabel;
     private Label pageSubtitleLabel;
+    private Label lblUserSessionName;
+    private Label lblUserSessionRole;
+    private Button btnLogoutHeader;
+
+    private Button btnAdminLogin;
+    private Button btnAdminDashboard;
+    private Button btnCandidates;
+    private Button btnStaff;
+    private Button btnTestMgmt;
+    private Button btnTestCentres;
 
     public MainLayout() {
         rootPane = new BorderPane();
@@ -42,8 +54,14 @@ public class MainLayout {
         Node footerArea = createFooterArea();
         rootPane.setBottom(footerArea);
 
-        // 6. Register Views & Set Default Route
+        // 6. Auth State Change Listener
+        controller.setAuthStateChangeListener(this::updateAuthStateUI);
+
+        // 7. Register Views & Set Default Route
         registerViews();
+
+        // 8. Initial Lockout Setup
+        updateAuthStateUI();
         controller.navigateTo("admin_login");
     }
 
@@ -72,10 +90,12 @@ public class MainLayout {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        Button btnRefresh = new Button("Refresh View");
-        btnRefresh.getStyleClass().add("btn-secondary");
+        btnLogoutHeader = new Button("Sign Out / Logout");
+        btnLogoutHeader.getStyleClass().add("btn-secondary");
+        btnLogoutHeader.setStyle("-fx-text-fill: #DC2626; -fx-border-color: #FCA5A5; -fx-font-weight: bold;");
+        btnLogoutHeader.setOnAction(e -> controller.logout());
 
-        HBox actionBox = new HBox(10, btnRefresh);
+        HBox actionBox = new HBox(10, btnLogoutHeader);
         actionBox.setAlignment(Pos.CENTER_RIGHT);
 
         topBar.getChildren().addAll(titleBox, spacer, actionBox);
@@ -104,12 +124,12 @@ public class MainLayout {
         sectionLabel.getStyleClass().add("nav-section-label");
         navContainer.getChildren().add(sectionLabel);
 
-        Button btnAdminLogin = createNavButton("Admin Authentication");
-        Button btnAdminDashboard = createNavButton("Admin Dashboard");
-        Button btnCandidates = createNavButton("Candidate Portal");
-        Button btnStaff = createNavButton("Staff Management");
-        Button btnTestMgmt = createNavButton("Test Management");
-        Button btnTestCentres = createNavButton("Test Centre Allocation");
+        btnAdminLogin = createNavButton("Admin Authentication");
+        btnAdminDashboard = createNavButton("Admin Dashboard");
+        btnCandidates = createNavButton("Candidate Portal");
+        btnStaff = createNavButton("Staff Management");
+        btnTestMgmt = createNavButton("Test Management");
+        btnTestCentres = createNavButton("Test Centre Allocation");
 
         navContainer.getChildren().addAll(
                 btnAdminLogin, btnAdminDashboard, btnCandidates, btnStaff, btnTestMgmt, btnTestCentres
@@ -128,13 +148,13 @@ public class MainLayout {
         VBox userProfileBox = new VBox(2);
         userProfileBox.getStyleClass().add("sidebar-footer");
 
-        Label userName = new Label("Active Session");
-        userName.getStyleClass().add("user-name");
+        lblUserSessionName = new Label("○ Locked Session");
+        lblUserSessionName.getStyleClass().add("user-name");
 
-        Label userRole = new Label("NTS Operations Center");
-        userRole.getStyleClass().add("user-role");
+        lblUserSessionRole = new Label("Sign-In Required");
+        lblUserSessionRole.getStyleClass().add("user-role");
 
-        userProfileBox.getChildren().addAll(userName, userRole);
+        userProfileBox.getChildren().addAll(lblUserSessionName, lblUserSessionRole);
 
         sidebar.getChildren().addAll(brandBox, navContainer, spacer, userProfileBox);
         return sidebar;
@@ -157,11 +177,33 @@ public class MainLayout {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        Label statusLabel = new Label("● System Operational — UML Architecture Mirror v1.0");
+        Label statusLabel = new Label("● System Security Operational — Auth Lock Active");
         statusLabel.getStyleClass().add("footer-status-indicator");
 
         footer.getChildren().addAll(copyrightLabel, spacer, statusLabel);
         return footer;
+    }
+
+    private void updateAuthStateUI() {
+        boolean isAuth = controller.isAuthenticated();
+
+        // Lock / Unlock Protected Navigation Items
+        btnAdminDashboard.setDisable(!isAuth);
+        btnCandidates.setDisable(!isAuth);
+        btnStaff.setDisable(!isAuth);
+        btnTestMgmt.setDisable(!isAuth);
+        btnTestCentres.setDisable(!isAuth);
+
+        btnLogoutHeader.setVisible(isAuth);
+        btnLogoutHeader.setManaged(isAuth);
+
+        if (isAuth) {
+            lblUserSessionName.setText("● Admin: " + controller.getAuthenticatedUser());
+            lblUserSessionRole.setText("Executive Access Granted");
+        } else {
+            lblUserSessionName.setText("○ Session Locked");
+            lblUserSessionRole.setText("Authentication Required");
+        }
     }
 
     private void registerViews() {
@@ -173,7 +215,8 @@ public class MainLayout {
         TestCentreAllocationView testCentreAllocationView = new TestCentreAllocationView();
 
         adminLoginView.setOnLoginSuccessListener(username -> {
-            DialogHelper.showSuccess("NTS Authentication", "Login Successful", "Welcome back, " + username + "! Navigating to Executive Dashboard.");
+            controller.setAuthenticated(true, username);
+            DialogHelper.showSuccess("NTS Authentication", "Access Granted", "Welcome back, " + username + "! Unlocking system features.");
             controller.navigateTo("admin_dashboard");
         });
 
