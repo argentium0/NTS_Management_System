@@ -1,6 +1,5 @@
 package oopProject;
 
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -8,10 +7,8 @@ import javafx.scene.layout.*;
 
 /**
  * MainLayout constructs the JavaFX UI Shell for the NTS Management System.
- * Adheres strictly to the NTS Design System:
- * - Primary Brand: NTS Action Orange (#F28221), NTS Label Navy (#2A4D7C)
- * - Secondary: Charcoal Slate (#2C3238), Coral Red (#ED6B6B), Emerald Green (#34B878)
- * - Layout: Pure JavaFX BorderPane with White Top Header, Navy Sidebar, Central Content Pane, and Charcoal Footer.
+ * Connects the Admin Authentication, Candidate Portal, Staff Management, Test Management,
+ * and Test Centre Allocation views mapped 1:1 to UML class architecture.
  */
 public class MainLayout {
 
@@ -27,27 +24,27 @@ public class MainLayout {
         contentArea = new StackPane();
         contentArea.getStyleClass().add("content-area");
 
-        // 1. Construct Top Header Bar (White background)
+        // 1. Construct Top Header Bar
         Node topBar = createTopBar();
         rootPane.setTop(topBar);
 
         // 2. Controller Initialization
         controller = new MainController(contentArea, pageTitleLabel, pageSubtitleLabel);
 
-        // 3. Construct Navigation Sidebar (Navy background)
+        // 3. Construct Navigation Sidebar
         VBox sidebar = createSidebar();
         rootPane.setLeft(sidebar);
 
         // 4. Set Central Content Pane
         rootPane.setCenter(contentArea);
 
-        // 5. Construct Bottom Footer Area (Charcoal background)
+        // 5. Construct Bottom Footer Area
         Node footerArea = createFooterArea();
         rootPane.setBottom(footerArea);
 
         // 6. Register Views & Set Default Route
         registerViews();
-        controller.navigateTo("dashboard");
+        controller.navigateTo("admin_login");
     }
 
     public BorderPane getRootPane() {
@@ -58,9 +55,6 @@ public class MainLayout {
         return controller;
     }
 
-    /* ==========================================================================
-       1. TOP HEADER BAR CREATION (White Background)
-       ========================================================================== */
     private Node createTopBar() {
         HBox topBar = new HBox();
         topBar.getStyleClass().add("top-bar");
@@ -78,28 +72,20 @@ public class MainLayout {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        // Quick Action Buttons using strict NTS Design System classes
-        Button btnNewCandidate = new Button("+ Add Candidate");
-        btnNewCandidate.getStyleClass().add("nts-primary-button");
-
-        Button btnRefresh = new Button("Refresh");
+        Button btnRefresh = new Button("Refresh View");
         btnRefresh.getStyleClass().add("btn-secondary");
 
-        HBox actionBox = new HBox(10, btnRefresh, btnNewCandidate);
+        HBox actionBox = new HBox(10, btnRefresh);
         actionBox.setAlignment(Pos.CENTER_RIGHT);
 
         topBar.getChildren().addAll(titleBox, spacer, actionBox);
         return topBar;
     }
 
-    /* ==========================================================================
-       2. SIDEBAR NAVIGATION CREATION (Navy #2A4D7C Background)
-       ========================================================================== */
     private VBox createSidebar() {
         VBox sidebar = new VBox();
         sidebar.getStyleClass().add("sidebar");
 
-        // Brand Header
         VBox brandBox = new VBox();
         brandBox.getStyleClass().add("sidebar-header");
 
@@ -111,39 +97,38 @@ public class MainLayout {
 
         brandBox.getChildren().addAll(brandLabel, subbrandLabel);
 
-        // Navigation Items Container
         VBox navContainer = new VBox();
         navContainer.getStyleClass().add("nav-container");
 
-        Label sectionLabel = new Label("MAIN NAVIGATION");
+        Label sectionLabel = new Label("UML ARCHITECTURE VIEWS");
         sectionLabel.getStyleClass().add("nav-section-label");
         navContainer.getChildren().add(sectionLabel);
 
-        // Navigation Buttons
-        Button btnDashboard = createNavButton("Admin Matrix");
-        Button btnLogin = createNavButton("Candidate Login");
-        Button btnCandidates = createNavButton("Candidates");
-        Button btnStaff = createNavButton("Staff & Duty");
-        Button btnTestCentres = createNavButton("Test Centres");
+        Button btnAdminLogin = createNavButton("Admin Authentication");
+        Button btnAdminDashboard = createNavButton("Admin Dashboard");
+        Button btnCandidates = createNavButton("Candidate Portal");
+        Button btnStaff = createNavButton("Staff Management");
+        Button btnTestMgmt = createNavButton("Test Management");
+        Button btnTestCentres = createNavButton("Test Centre Allocation");
 
-        navContainer.getChildren().addAll(btnDashboard, btnLogin, btnCandidates, btnStaff, btnTestCentres);
+        navContainer.getChildren().addAll(
+                btnAdminLogin, btnAdminDashboard, btnCandidates, btnStaff, btnTestMgmt, btnTestCentres
+        );
 
-        // Register Buttons with Controller
-        controller.registerNavButton("dashboard", btnDashboard);
-        controller.registerNavButton("login", btnLogin);
+        controller.registerNavButton("admin_login", btnAdminLogin);
+        controller.registerNavButton("admin_dashboard", btnAdminDashboard);
         controller.registerNavButton("candidates", btnCandidates);
         controller.registerNavButton("staff", btnStaff);
+        controller.registerNavButton("test_mgmt", btnTestMgmt);
         controller.registerNavButton("test_centres", btnTestCentres);
 
-        // Spacer to push footer to bottom
         Region spacer = new Region();
         VBox.setVgrow(spacer, Priority.ALWAYS);
 
-        // Sidebar Footer User Profile Area
         VBox userProfileBox = new VBox(2);
         userProfileBox.getStyleClass().add("sidebar-footer");
 
-        Label userName = new Label("Admin Administrator");
+        Label userName = new Label("Active Session");
         userName.getStyleClass().add("user-name");
 
         Label userRole = new Label("NTS Operations Center");
@@ -161,9 +146,6 @@ public class MainLayout {
         return btn;
     }
 
-    /* ==========================================================================
-       3. BOTTOM FOOTER AREA CREATION (Charcoal #2C3238 Background)
-       ========================================================================== */
     private Node createFooterArea() {
         HBox footer = new HBox();
         footer.getStyleClass().add("footer-bar");
@@ -175,126 +157,31 @@ public class MainLayout {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        Label statusLabel = new Label("● System Operational — Engine v1.0.0");
+        Label statusLabel = new Label("● System Operational — UML Architecture Mirror v1.0");
         statusLabel.getStyleClass().add("footer-status-indicator");
 
         footer.getChildren().addAll(copyrightLabel, spacer, statusLabel);
         return footer;
     }
 
-    /* ==========================================================================
-       4. VIEW REGISTRATION & DASHBOARD GENERATION
-       ========================================================================== */
     private void registerViews() {
-        AdminDashboardView adminDashboard = new AdminDashboardView();
-        CandidateLoginView candidateLogin = new CandidateLoginView();
+        AdminLoginView adminLoginView = new AdminLoginView();
+        AdminDashboard adminDashboard = new AdminDashboard();
+        CandidatePortalView candidatePortalView = new CandidatePortalView();
+        StaffManagementView staffManagementView = new StaffManagementView();
+        TestManagementView testManagementView = new TestManagementView();
+        TestCentreAllocationView testCentreAllocationView = new TestCentreAllocationView();
 
-        candidateLogin.setOnLoginHandler((cnic, password) -> {
-            DialogHelper.showSuccess("NTS Authentication", "Login Successful", "Candidate logged in with CNIC: " + cnic);
-            controller.navigateTo("candidates");
+        adminLoginView.setOnLoginSuccessListener(username -> {
+            DialogHelper.showSuccess("NTS Authentication", "Login Successful", "Welcome back, " + username + "! Navigating to Executive Dashboard.");
+            controller.navigateTo("admin_dashboard");
         });
 
-        candidateLogin.setOnSignUpHandler(() -> {
-            DialogHelper.showInformation("NTS Portal", "Registration Redirect", "Navigating to Candidate Application & Registration Portal.");
-            controller.navigateTo("candidates");
-        });
-
-        controller.registerView("dashboard", adminDashboard);
-        controller.registerView("admin_matrix", adminDashboard);
-        controller.registerView("login", candidateLogin);
-        controller.registerView("candidates", createCandidatesView());
-        controller.registerView("staff", createStaffView());
-        controller.registerView("test_centres", createTestCentresView());
-    }
-
-    private Node createDashboardView() {
-        VBox layout = new VBox(20);
-        layout.setPadding(new Insets(10));
-
-        // Metric Cards Grid
-        GridPane grid = new GridPane();
-        grid.setHgap(20);
-        grid.setVgap(20);
-
-        grid.add(createMetricCard("Total Candidates", "1,248", "+12% this month"), 0, 0);
-        grid.add(createMetricCard("Active Test Centres", "42", "Nationwide operational"), 1, 0);
-        grid.add(createMetricCard("Assigned Staff", "310", "Invigilators & Superintendents"), 2, 0);
-        grid.add(createMetricCard("Scheduled Exams", "18", "NAT, GAT & TOEIC"), 3, 0);
-
-        for (int i = 0; i < 4; i++) {
-            ColumnConstraints col = new ColumnConstraints();
-            col.setPercentWidth(25);
-            grid.getColumnConstraints().add(col);
-        }
-
-        // Recent Activity Table Card
-        VBox tableCard = new VBox(12);
-        tableCard.getStyleClass().add("flat-card");
-
-        Label cardHeader = new Label("Recent Registered Candidates");
-        cardHeader.getStyleClass().add("card-title");
-
-        TableView<String[]> table = createMinimalTable(
-                new String[]{"Form #", "Candidate Name", "CNIC", "City", "Test Applied", "Status"},
-                new String[][]{
-                        {"1001", "Ali Ahmed", "35202-1234567-1", "Lahore", "NAT-I", "Confirmed"},
-                        {"1002", "Fatima Khan", "61101-9876543-2", "Islamabad", "GAT General", "Pending"},
-                        {"1003", "Usman Raza", "42101-5554443-3", "Karachi", "TOEIC", "Confirmed"},
-                        {"1004", "Zainab Bibi", "31202-7778889-4", "Multan", "NAT-II", "Confirmed"}
-                }
-        );
-
-        tableCard.getChildren().addAll(cardHeader, table);
-        layout.getChildren().addAll(grid, tableCard);
-
-        ScrollPane scrollPane = new ScrollPane(layout);
-        scrollPane.setFitToWidth(true);
-        scrollPane.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
-        return scrollPane;
-    }
-
-    private Node createCandidatesView() {
-        return new CandidatePortalView();
-    }
-
-    private Node createStaffView() {
-        return new StaffView();
-    }
-
-    private Node createTestCentresView() {
-        return new TestCentreView();
-    }
-
-    private VBox createMetricCard(String title, String value, String subtitle) {
-        VBox card = new VBox(6);
-        card.getStyleClass().add("flat-card");
-
-        Label titleLabel = new Label(title);
-        titleLabel.getStyleClass().add("card-title");
-
-        Label valLabel = new Label(value);
-        valLabel.getStyleClass().add("metric-value");
-
-        Label subLabel = new Label(subtitle);
-        subLabel.getStyleClass().add("metric-label");
-
-        card.getChildren().addAll(titleLabel, valLabel, subLabel);
-        return card;
-    }
-
-    private TableView<String[]> createMinimalTable(String[] headers, String[][] data) {
-        TableView<String[]> table = new TableView<>();
-        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
-
-        for (int i = 0; i < headers.length; i++) {
-            final int colIdx = i;
-            TableColumn<String[], String> col = new TableColumn<>(headers[i]);
-            col.setCellValueFactory(cellData -> new javafx.beans.property.SimpleStringProperty(cellData.getValue()[colIdx]));
-            table.getColumns().add(col);
-        }
-
-        java.util.Collections.addAll(table.getItems(), data);
-        table.setPrefHeight(240);
-        return table;
+        controller.registerView("admin_login", adminLoginView);
+        controller.registerView("admin_dashboard", adminDashboard);
+        controller.registerView("candidates", candidatePortalView);
+        controller.registerView("staff", staffManagementView);
+        controller.registerView("test_mgmt", testManagementView);
+        controller.registerView("test_centres", testCentreAllocationView);
     }
 }

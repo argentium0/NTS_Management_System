@@ -1,36 +1,30 @@
 package oopProject;
 
-import java.util.Scanner;
-
-public class Invigilator extends Employee{
+public class Invigilator extends Employee {
 
     private String designation;
-    private String supervisorName;
-    private String supervisorPhoneNo;
-    private Superintendent superintendent;
+    private String superintendentName;
+    private Long supdtPhone;
 
-    public Superintendent getSuperintendent() {
-        return superintendent;
+    public Invigilator() {
+        super();
+        this.designation = "";
+        this.superintendentName = "";
+        this.supdtPhone = 0L;
     }
 
-    public void setSuperintendent(Superintendent superintendent) {
-        this.superintendent = superintendent;
+    public Invigilator(String n, String fn, String id, String phone, int employeeID, String employeeCity, float allowance, int experience, Double invig_allowance, Double spdt_allowance, String designation, String superintendentName, Long supdtPhone) {
+        super(n, fn, id, phone, employeeID, employeeCity, allowance, experience, invig_allowance, spdt_allowance);
+        this.designation = designation;
+        this.superintendentName = superintendentName;
+        this.supdtPhone = supdtPhone;
     }
 
-    public String getSupervisorName() {
-        return supervisorName;
-    }
-
-    public void setSupervisorName(String supervisorName) {
-        this.supervisorName = supervisorName;
-    }
-
-    public String getSupervisorPhoneNo() {
-        return supervisorPhoneNo;
-    }
-
-    public void setSupervisorPhoneNo(String supervisorPhoneNo) {
-        this.supervisorPhoneNo = supervisorPhoneNo;
+    public Invigilator(String n, String fn, String id, String phone, int employeeID, String employeeCity, String des, String supervisor, Double invig_allowance, Double spdt_allowance, int interval) {
+        super(n, fn, id, phone, employeeID, employeeCity, 0.0f, 0, invig_allowance, spdt_allowance);
+        this.designation = des;
+        this.superintendentName = supervisor;
+        this.supdtPhone = 0L;
     }
 
     public String getDesignation() {
@@ -41,72 +35,35 @@ public class Invigilator extends Employee{
         this.designation = designation;
     }
 
+    public String getSuperintendentName() {
+        return superintendentName;
+    }
 
-    Invigilator()
-        {
-            super();
-            designation="";
-            supervisorName="";
-            supervisorPhoneNo =null;
-            superintendent=new Superintendent();
-        }
+    public void setSuperintendentName(String superintendentName) {
+        this.superintendentName = superintendentName;
+    }
 
-        Invigilator(String n,String fn,String id,String phone,int employeeNo,String city,String des,String supervisor,Double invig_allowance,Double spdt_allowance,int interval)
-        {
-            super(n,fn,id,phone,employeeNo,city,invig_allowance,spdt_allowance);
-            this.designation=des;
-            this.supervisorName=supervisor;
-            superintendent=new Superintendent(n,fn,id,phone,employeeNo,city,invig_allowance,spdt_allowance,interval);
+    public Long getSupdtPhone() {
+        return supdtPhone;
+    }
 
-        }
+    public void setSupdtPhone(Long supdtPhone) {
+        this.supdtPhone = supdtPhone;
+    }
 
-    @Override
-    @SuppressWarnings("resource")
-    public void setter() {
-        super.setter();
-        System.out.println("Enter the designation of employee: ");
-        Scanner input = new Scanner(System.in);
-        designation= input.nextLine();
-
-        System.out.println("Enter the name of the superintendent: ");
-        supervisorName=input.nextLine();
-
-        System.out.println("Enter the phone number of superintendent: ");
-        supervisorPhoneNo=input.nextLine();
+    public void delete() {
+        // Method stub for UML delete logic
     }
 
     @Override
-    @SuppressWarnings("resource")
-    public void update() {
+    public void setter() {}
 
-        super.update();
-        System.out.println("Enter the new designation of employee: ");
-        Scanner input = new Scanner(System.in);
-        designation=input.nextLine();
-
-        System.out.println("Enter the name of the new superintendent: ");
-        supervisorName=input.nextLine();
-
-        System.out.println("Enter the phone number of new superintendent: ");
-        supervisorPhoneNo=input.nextLine();
-
-    }
+    @Override
+    public void update() {}
 
     @Override
     public void display() {
-
         super.display();
-        System.out.println("IS AN Invigilator");
-        System.out.println("Designation: "+designation);
-        System.out.println("Superintendent: "+supervisorName);
-        System.out.println("Superintendent Phone number: "+supervisorPhoneNo);
-        if(super.getInvig_allowance()==0)
-        {
-            System.out.println("Allowance not determined yet");
-        }
-        else {
-            super.get_Allowance(1);
-        }
-        System.out.println();
+        System.out.println("Designation: " + designation + ", Superintendent: " + superintendentName);
     }
 }

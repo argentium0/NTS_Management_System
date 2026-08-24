@@ -1,42 +1,46 @@
 package oopProject;
 
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleFloatProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 
+import java.util.ArrayList;
+
 /**
- * CandidatePortalView implements Phase 2 of the NTS Management System JavaFX upgrade.
- * Features a minimalist CRUD form UI cleanly positioned beside a TableView for candidate records.
+ * CandidatePortalView mapped 1:1 to Person -> Candidate UML architecture.
+ * Form Fields: name, fname, id card (numeric), phoneNo (numeric), candidateEmail, candidatePass, formNo.
+ * Associated Data: TableView displaying candidate's ArrayList<Test> relation.
+ * Action Buttons: Add Basic Data, Update Candidate Info, Delete Candidate, Apply Test, Check Status.
  */
 public class CandidatePortalView extends VBox {
 
-    // Form Controls
-    private final TextField txtFormNo = new TextField();
+    // Form Field Controls
     private final TextField txtName = new TextField();
-    private final TextField txtFatherName = new TextField();
-    private final TextField txtCnic = new TextField();
-    private final TextField txtPhone = new TextField();
-    private final TextField txtEmail = new TextField();
-    private final ComboBox<String> cbTestType = new ComboBox<>();
+    private final TextField txtFname = new TextField();
+    private final TextField txtIdCard = new TextField();
+    private final TextField txtPhoneNo = new TextField();
+    private final TextField txtCandidateEmail = new TextField();
+    private final PasswordField txtCandidatePass = new PasswordField();
+    private final TextField txtFormNo = new TextField();
 
-    // Search Controls
-    private final TextField txtSearchFormNo = new TextField();
-
-    // TableView & Observable Data Model
-    private final TableView<Candidate> candidateTable = new TableView<>();
+    // TableView & Candidate Master / Associated Tests Data
+    private final TableView<Candidate> candidateMasterTable = new TableView<>();
     private final ObservableList<Candidate> candidateData = FXCollections.observableArrayList();
+
+    private final TableView<Test> testTableView = new TableView<>();
+    private final ObservableList<Test> testData = FXCollections.observableArrayList();
 
     public CandidatePortalView() {
         setSpacing(20);
         setPadding(new Insets(0));
 
-        // Build Master Layout: Left (Apply/CRUD Form Pane) | Right (Data Directory Table)
         HBox mainContent = new HBox(20);
         HBox.setHgrow(mainContent, Priority.ALWAYS);
 
@@ -44,318 +48,322 @@ public class CandidatePortalView extends VBox {
         formCard.setPrefWidth(380);
         formCard.setMinWidth(340);
 
-        VBox tableCard = createCandidateTableCard();
-        HBox.setHgrow(tableCard, Priority.ALWAYS);
+        VBox dataCard = createCandidateDataCard();
+        HBox.setHgrow(dataCard, Priority.ALWAYS);
 
-        mainContent.getChildren().addAll(formCard, tableCard);
+        mainContent.getChildren().addAll(formCard, dataCard);
         getChildren().add(mainContent);
 
-        // Load Initial Seed Data / Sync with Candidate.candidates
-        refreshTableData();
+        refreshCandidateData();
+
+        candidateMasterTable.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+            if (newVal != null) {
+                populateForm(newVal);
+                updateAssociatedTestsTable(newVal);
+            }
+        });
+
+        if (!candidateData.isEmpty()) {
+            candidateMasterTable.getSelectionModel().selectFirst();
+        }
     }
 
-    /* ==========================================================================
-       1. FORM SECTION: "APPLY FOR TEST & CANDIDATE REGISTRATION"
-       ========================================================================== */
     private VBox createCandidateFormCard() {
         VBox card = new VBox(14);
         card.getStyleClass().add("flat-card");
         card.setPadding(new Insets(20));
 
-        // Section Title
-        Label titleLabel = new Label("Candidate & Test Registration");
+        Label titleLabel = new Label("Candidate Information Form");
         titleLabel.getStyleClass().add("card-title");
 
-        // Form Fields (Strict minimal UI with explicit Labels above fields)
         VBox formGrid = new VBox(10);
-
         formGrid.getChildren().addAll(
-                createFormField("Form Number", txtFormNo),
-                createFormField("Full Name", txtName),
-                createFormField("Father Name", txtFatherName),
-                createFormField("CNIC Number", txtCnic),
-                createFormField("Phone Number", txtPhone),
-                createFormField("Email Address", txtEmail)
+                createFormField("Candidate Name (name)", txtName, "Enter full name..."),
+                createFormField("Father Name (fname)", txtFname, "Enter father name..."),
+                createFormField("ID Card - Numeric (id card)", txtIdCard, "e.g. 3520212345671"),
+                createFormField("Phone No - Numeric (phoneNo)", txtPhoneNo, "e.g. 03001234567"),
+                createFormField("Candidate Email (candidateEmail)", txtCandidateEmail, "name@domain.com"),
+                createFormField("Candidate Password (candidatePass)", txtCandidatePass, "Password..."),
+                createFormField("Form Number (formNo)", txtFormNo, "Numeric form number...")
         );
 
-        // Test Type Selection ComboBox
-        VBox testBox = new VBox(4);
-        Label lblTestType = new Label("Select Test Type");
-        lblTestType.setStyle("-fx-font-weight: bold; -fx-text-fill: #334155; -fx-font-size: 11px;");
-        cbTestType.getItems().addAll("NAT (National Aptitude Test)", "GAT (Graduate Assessment Test)", "TOEIC (Test of English)");
-        cbTestType.setValue("NAT (National Aptitude Test)");
-        cbTestType.setMaxWidth(Double.MAX_VALUE);
-        testBox.getChildren().addAll(lblTestType, cbTestType);
+        // Action Buttons mapped 1:1 to UML methods
+        VBox buttonBox = new VBox(10);
 
-        formGrid.getChildren().add(testBox);
+        HBox row1 = new HBox(10);
+        Button btnAddBasicData = new Button("Add Basic Data");
+        btnAddBasicData.getStyleClass().add("btn-primary");
+        btnAddBasicData.setOnAction(e -> handleAddBasicData());
+        btnAddBasicData.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(btnAddBasicData, Priority.ALWAYS);
 
-        // Action Buttons
-        HBox buttonBar1 = new HBox(10);
-        Button btnApply = new Button("Apply For Test");
-        btnApply.getStyleClass().add("btn-accent");
-        btnApply.setOnAction(this::handleApplyForTest);
-        btnApply.setMaxWidth(Double.MAX_VALUE);
-        HBox.setHgrow(btnApply, Priority.ALWAYS);
+        Button btnUpdateCandidateInfo = new Button("Update Candidate Info");
+        btnUpdateCandidateInfo.getStyleClass().add("btn-secondary");
+        btnUpdateCandidateInfo.setOnAction(e -> handleUpdateCandidateInfo());
 
-        Button btnAdd = new Button("Save Candidate");
-        btnAdd.getStyleClass().add("btn-primary");
-        btnAdd.setOnAction(this::handleAddCandidate);
+        row1.getChildren().addAll(btnAddBasicData, btnUpdateCandidateInfo);
 
-        buttonBar1.getChildren().addAll(btnApply, btnAdd);
+        HBox row2 = new HBox(10);
+        Button btnDeleteCandidate = new Button("Delete Candidate");
+        btnDeleteCandidate.getStyleClass().add("btn-secondary");
+        btnDeleteCandidate.setStyle("-fx-text-fill: #DC2626; -fx-border-color: #FCA5A5;");
+        btnDeleteCandidate.setOnAction(e -> handleDeleteCandidate());
 
-        HBox buttonBar2 = new HBox(10);
-        Button btnUpdate = new Button("Update");
-        btnUpdate.getStyleClass().add("btn-secondary");
-        btnUpdate.setOnAction(this::handleUpdateCandidate);
+        Button btnApplyTest = new Button("Apply Test");
+        btnApplyTest.getStyleClass().add("btn-accent");
+        btnApplyTest.setOnAction(e -> handleApplyTest());
 
-        Button btnDelete = new Button("Delete");
-        btnDelete.getStyleClass().add("btn-secondary");
-        btnDelete.setStyle("-fx-text-fill: #DC2626; -fx-border-color: #FCA5A5;");
-        btnDelete.setOnAction(this::handleDeleteCandidate);
+        Button btnCheckStatus = new Button("Check Status");
+        btnCheckStatus.getStyleClass().add("btn-secondary");
+        btnCheckStatus.setOnAction(e -> handleCheckStatus());
 
-        Button btnClear = new Button("Clear Form");
-        btnClear.getStyleClass().add("btn-secondary");
-        btnClear.setOnAction(this::handleClearForm);
+        row2.getChildren().addAll(btnDeleteCandidate, btnApplyTest, btnCheckStatus);
 
-        buttonBar2.getChildren().addAll(btnUpdate, btnDelete, btnClear);
-
-        card.getChildren().addAll(titleLabel, formGrid, buttonBar1, buttonBar2);
+        buttonBox.getChildren().addAll(row1, row2);
+        card.getChildren().addAll(titleLabel, formGrid, buttonBox);
         return card;
     }
 
-    private VBox createFormField(String labelText, TextField textField) {
-        VBox box = new VBox(4);
-        Label label = new Label(labelText);
-        label.setStyle("-fx-font-weight: bold; -fx-text-fill: #334155; -fx-font-size: 11px;");
-        textField.setMaxWidth(Double.MAX_VALUE);
-        box.getChildren().addAll(label, textField);
-        return box;
-    }
-
-    /* ==========================================================================
-       2. DATA DISPLAY SECTION: TABLEVIEW & SEARCH BAR
-       ========================================================================== */
-    private VBox createCandidateTableCard() {
-        VBox card = new VBox(12);
+    private VBox createCandidateDataCard() {
+        VBox card = new VBox(16);
         card.getStyleClass().add("flat-card");
         card.setPadding(new Insets(20));
 
-        // Header & Search Filter Bar
-        HBox headerBar = new HBox(12);
-        headerBar.setAlignment(Pos.CENTER_LEFT);
+        // Master Candidate Directory Table
+        Label lblMasterHeader = new Label("Candidate Records Directory");
+        lblMasterHeader.getStyleClass().add("card-title");
 
-        Label cardHeader = new Label("Candidate Records Directory");
-        cardHeader.getStyleClass().add("card-title");
+        setupCandidateMasterTable();
+        candidateMasterTable.setItems(candidateData);
+        candidateMasterTable.setPrefHeight(180);
 
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
+        // Relational TableView displaying ArrayList<Test> relation
+        Label lblRelationalHeader = new Label("Associated Tests Relation (ArrayList<Test>)");
+        lblRelationalHeader.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #2A4D7C;");
 
-        txtSearchFormNo.setPromptText("Enter Form No...");
-        txtSearchFormNo.setPrefWidth(160);
+        setupAssociatedTestTable();
+        testTableView.setItems(testData);
+        testTableView.setPrefHeight(160);
 
-        Button btnSearch = new Button("Search");
-        btnSearch.getStyleClass().add("btn-secondary");
-        btnSearch.setOnAction(this::handleSearchCandidate);
-
-        Button btnReset = new Button("Show All");
-        btnReset.getStyleClass().add("btn-secondary");
-        btnReset.setOnAction(e -> refreshTableData());
-
-        headerBar.getChildren().addAll(cardHeader, spacer, txtSearchFormNo, btnSearch, btnReset);
-
-        // Setup TableView Columns bound to Candidate model
-        setupTableColumns();
-
-        candidateTable.setItems(candidateData);
-        candidateTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
-        VBox.setVgrow(candidateTable, Priority.ALWAYS);
-
-        // Selection Listener for populating form
-        candidateTable.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null) {
-                populateForm(newVal);
-            }
-        });
-
-        card.getChildren().addAll(headerBar, candidateTable);
+        card.getChildren().addAll(lblMasterHeader, candidateMasterTable, lblRelationalHeader, testTableView);
         return card;
     }
 
-    /**
-     * Binds TableView columns directly to the Candidate entity properties.
-     */
+    private VBox createFormField(String labelText, Control inputControl, String promptText) {
+        VBox box = new VBox(4);
+        Label label = new Label(labelText);
+        label.getStyleClass().add("nts-form-label");
+        if (inputControl instanceof TextField tf) {
+            tf.getStyleClass().add("nts-input-field");
+            tf.setPromptText(promptText);
+        } else if (inputControl instanceof PasswordField pf) {
+            pf.getStyleClass().add("nts-input-field");
+            pf.setPromptText(promptText);
+        }
+        inputControl.setMaxWidth(Double.MAX_VALUE);
+        box.getChildren().addAll(label, inputControl);
+        return box;
+    }
+
     @SuppressWarnings("unchecked")
-    private void setupTableColumns() {
+    private void setupCandidateMasterTable() {
         TableColumn<Candidate, Integer> colFormNo = new TableColumn<>("Form #");
         colFormNo.setCellValueFactory(data -> new SimpleIntegerProperty(data.getValue().getFormNo()).asObject());
-        colFormNo.setPrefWidth(70);
 
-        TableColumn<Candidate, String> colName = new TableColumn<>("Candidate Name");
+        TableColumn<Candidate, String> colName = new TableColumn<>("Name");
         colName.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getName()));
 
-        TableColumn<Candidate, String> colFatherName = new TableColumn<>("Father Name");
-        colFatherName.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getFname()));
+        TableColumn<Candidate, String> colFname = new TableColumn<>("Father Name");
+        colFname.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getFname()));
 
-        TableColumn<Candidate, String> colCnic = new TableColumn<>("CNIC");
-        colCnic.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getIdCard()));
+        TableColumn<Candidate, String> colIdCard = new TableColumn<>("ID Card");
+        colIdCard.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getIdCard()));
 
-        TableColumn<Candidate, String> colPhone = new TableColumn<>("Phone");
+        TableColumn<Candidate, String> colPhone = new TableColumn<>("Phone No");
         colPhone.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getPhoneNo()));
 
-        TableColumn<Candidate, String> colEmail = new TableColumn<>("Email");
+        TableColumn<Candidate, String> colEmail = new TableColumn<>("Candidate Email");
         colEmail.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getCandidateEmail()));
 
-        TableColumn<Candidate, String> colTest = new TableColumn<>("Test Type");
-        colTest.setCellValueFactory(data -> {
-            Test t = data.getValue().getTest();
-            return new SimpleStringProperty((t != null && t.getTestName() != null) ? t.getTestName() : "Unassigned");
-        });
-
         TableColumn<Candidate, String> colStatus = new TableColumn<>("Status");
-        colStatus.setCellValueFactory(data -> {
-            Boolean status = data.getValue().getStatus();
-            return new SimpleStringProperty((status != null && status) ? "Applied" : "Not Applied");
-        });
+        colStatus.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getStatus() != null && data.getValue().getStatus() ? "Applied" : "Not Applied"));
 
-        candidateTable.getColumns().addAll(colFormNo, colName, colFatherName, colCnic, colPhone, colEmail, colTest, colStatus);
+        candidateMasterTable.getColumns().addAll(colFormNo, colName, colFname, colIdCard, colPhone, colEmail, colStatus);
+        candidateMasterTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
     }
 
-    /* ==========================================================================
-       3. EVENT HANDLERS & BUSINESS LOGIC HOOKS
-       ========================================================================== */
+    @SuppressWarnings("unchecked")
+    private void setupAssociatedTestTable() {
+        TableColumn<Test, Integer> colTestID = new TableColumn<>("Test ID");
+        colTestID.setCellValueFactory(data -> new SimpleIntegerProperty(data.getValue().getTestID()).asObject());
 
-    /**
-     * Stub for applying for a test via the Candidate domain model and ApplyTest interface.
-     */
-    public void handleApplyForTest(ActionEvent event) {
-        Candidate selected = candidateTable.getSelectionModel().getSelectedItem();
-        if (selected == null) {
-            showAlert(Alert.AlertType.WARNING, "No Selection", "Please select a candidate from the table or fill form details first.");
-            return;
-        }
+        TableColumn<Test, String> colTestName = new TableColumn<>("Test Name");
+        colTestName.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().getTestName()));
 
-        String selectedTest = cbTestType.getValue();
-        if (selected.getTest() == null) {
-            selected.setTest(new Test());
-        }
-        selected.getTest().setTestName(selectedTest != null ? selectedTest.split(" ")[0] : "NAT");
-        selected.setStatus(true);
+        TableColumn<Test, Integer> colMarks = new TableColumn<>("Marks");
+        colMarks.setCellValueFactory(data -> new SimpleIntegerProperty(data.getValue().getMarks()).asObject());
 
-        refreshTableData();
-        DialogHelper.showInformation("Test Application", "Candidate Registered", "Candidate " + selected.getName() + " successfully registered for " + selectedTest);
+        TableColumn<Test, Double> colCharges = new TableColumn<>("Charges (PKR)");
+        colCharges.setCellValueFactory(data -> new SimpleDoubleProperty(data.getValue().getCharges()).asObject());
+
+        TableColumn<Test, Float> colPassing = new TableColumn<>("Passing %");
+        colPassing.setCellValueFactory(data -> new SimpleFloatProperty(data.getValue().getPassingPer()).asObject());
+
+        testTableView.getColumns().addAll(colTestID, colTestName, colMarks, colCharges, colPassing);
+        testTableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
     }
 
-    public void handleAddCandidate(ActionEvent event) {
+    // 1:1 Action Button Handlers mapping UML methods
+    private void handleAddBasicData() {
         try {
-            int formNo = Integer.parseInt(txtFormNo.getText().trim());
             String name = txtName.getText().trim();
-            String fname = txtFatherName.getText().trim();
-            String cnic = txtCnic.getText().trim();
-            String phone = txtPhone.getText().trim();
-            String email = txtEmail.getText().trim();
+            String fname = txtFname.getText().trim();
+            String idCard = validateNumericField(txtIdCard.getText().trim(), "ID Card");
+            String phoneNo = validateNumericField(txtPhoneNo.getText().trim(), "Phone No");
+            String email = txtCandidateEmail.getText().trim();
+            String pass = txtCandidatePass.getText().trim();
+            int formNo = Integer.parseInt(txtFormNo.getText().trim());
 
-            Candidate candidate = new Candidate(name, fname, cnic, phone, formNo, email, "pass123", "NAT", 90, 850, 60.0f, null, false);
-            Candidate.candidates.add(candidate);
+            Candidate c = new Candidate();
+            c.addBasicData(name, fname, idCard, phoneNo, formNo, email, pass);
+            Candidate.candidates.add(c);
 
-            refreshTableData();
-            handleClearForm(null);
-            DialogHelper.showInformation("Success", "Candidate Registered", "Candidate record added successfully.");
-        } catch (NumberFormatException e) {
-            DialogHelper.showError("Input Error", "Invalid Form Number", "Please enter a valid numeric Form Number.");
+            refreshCandidateData();
+            candidateMasterTable.getSelectionModel().select(c);
+            DialogHelper.showInformation("Candidate Portal", "Add Basic Data Executed", "Candidate basic data created successfully for Form #" + formNo);
+        } catch (Exception e) {
+            DialogHelper.showError("Validation Error", "Invalid Input", e.getMessage());
         }
     }
 
-    public void handleSearchCandidate(ActionEvent event) {
-        String searchStr = txtSearchFormNo.getText().trim();
-        if (searchStr.isEmpty()) {
-            refreshTableData();
+    private void handleUpdateCandidateInfo() {
+        Candidate selected = candidateMasterTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            DialogHelper.showError("No Selection", "Update Error", "Please select a candidate from the table first.");
             return;
         }
 
         try {
-            int targetFormNo = Integer.parseInt(searchStr);
-            candidateData.clear();
-            for (Candidate c : Candidate.candidates) {
-                if (c.getFormNo() == targetFormNo) {
-                    candidateData.add(c);
-                }
-            }
-        } catch (NumberFormatException e) {
-            DialogHelper.showError("Search Error", "Invalid Form Number", "Please enter a valid numeric Form Number to search.");
+            String name = txtName.getText().trim();
+            String fname = txtFname.getText().trim();
+            String idCard = validateNumericField(txtIdCard.getText().trim(), "ID Card");
+            String phoneNo = validateNumericField(txtPhoneNo.getText().trim(), "Phone No");
+            String email = txtCandidateEmail.getText().trim();
+            String pass = txtCandidatePass.getText().trim();
+            int formNo = Integer.parseInt(txtFormNo.getText().trim());
+
+            selected.updateCandidateInfo(name, fname, idCard, phoneNo, formNo, email, pass);
+
+            candidateMasterTable.refresh();
+            DialogHelper.showInformation("Candidate Portal", "Update Candidate Info Executed", "Candidate info updated successfully for Form #" + formNo);
+        } catch (Exception e) {
+            DialogHelper.showError("Validation Error", "Invalid Input", e.getMessage());
         }
     }
 
-    public void handleUpdateCandidate(ActionEvent event) {
-        Candidate selected = candidateTable.getSelectionModel().getSelectedItem();
+    private void handleDeleteCandidate() {
+        Candidate selected = candidateMasterTable.getSelectionModel().getSelectedItem();
         if (selected == null) {
-            DialogHelper.showError("Selection Required", "No Candidate Selected", "Please select a candidate to update.");
+            DialogHelper.showError("No Selection", "Delete Error", "Please select a candidate to delete.");
             return;
         }
 
-        selected.setName(txtName.getText().trim());
-        selected.setFname(txtFatherName.getText().trim());
-        selected.setIdCard(txtCnic.getText().trim());
-        selected.setPhoneNo(txtPhone.getText().trim());
-        selected.setCandidateEmail(txtEmail.getText().trim());
-
-        refreshTableData();
-        DialogHelper.showInformation("Updated", "Candidate Updated", "Candidate details updated successfully.");
+        DialogHelper.showConfirmation("Confirm Deletion", "Delete Candidate", "Delete candidate record for Form #" + selected.getFormNo() + "?", () -> {
+            selected.deleteCandidate();
+            refreshCandidateData();
+            clearFormInputs();
+            DialogHelper.showInformation("Candidate Portal", "Delete Candidate Executed", "Candidate deleted successfully.");
+        });
     }
 
-    public void handleDeleteCandidate(ActionEvent event) {
-        Candidate selected = candidateTable.getSelectionModel().getSelectedItem();
+    private void handleApplyTest() {
+        Candidate selected = candidateMasterTable.getSelectionModel().getSelectedItem();
         if (selected == null) {
-            DialogHelper.showError("Selection Required", "No Candidate Selected", "Please select a candidate to delete.");
+            DialogHelper.showError("No Selection", "Apply Test Error", "Please select a candidate to apply test for.");
             return;
         }
 
-        DialogHelper.showConfirmation("Confirm Delete", "Remove Candidate Record",
-                "Are you sure you want to delete candidate " + selected.getName() + " (Form #" + selected.getFormNo() + ")?",
-                () -> {
-                    Candidate.candidates.remove(selected);
-                    refreshTableData();
-                    handleClearForm(null);
-                    DialogHelper.showInformation("Deleted", "Candidate Removed", "Candidate record deleted successfully.");
-                });
+        // Apply test logic: add a test to the Candidate's ArrayList<Test>
+        Test newTest = new Test(101, "NAT-I Aptitude", 90, 850.0, 60.0f);
+        if (selected.getTest() == null) {
+            selected.setTest(new ArrayList<>());
+        }
+        selected.getTest().add(newTest);
+        selected.applyTest();
+
+        candidateMasterTable.refresh();
+        updateAssociatedTestsTable(selected);
+
+        DialogHelper.showInformation("ApplyTest Interface", "applyTest() Executed", "Candidate " + selected.getName() + " successfully applied for test: " + newTest.getTestName());
     }
 
+    private void handleCheckStatus() {
+        Candidate selected = candidateMasterTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            DialogHelper.showError("No Selection", "Status Error", "Please select a candidate to check status.");
+            return;
+        }
 
-    public void handleClearForm(ActionEvent event) {
-        txtFormNo.clear();
-        txtName.clear();
-        txtFatherName.clear();
-        txtCnic.clear();
-        txtPhone.clear();
-        txtEmail.clear();
-        cbTestType.getSelectionModel().selectFirst();
-        candidateTable.getSelectionModel().clearSelection();
+        selected.checkstatus();
+        String statusStr = (selected.getStatus() != null && selected.getStatus()) ? "Applied for Test(s)" : "Not Applied";
+        DialogHelper.showInformation("ApplyTest Interface", "checkStatus() Executed", "Candidate " + selected.getName() + " Status: " + statusStr + "\nTotal Registered Tests: " + (selected.getTest() != null ? selected.getTest().size() : 0));
+    }
+
+    private String validateNumericField(String input, String fieldName) throws IllegalArgumentException {
+        if (input == null || input.isEmpty() || !input.matches("\\d+")) {
+            throw new IllegalArgumentException(fieldName + " must contain numeric digits only.");
+        }
+        return input;
     }
 
     private void populateForm(Candidate c) {
-        txtFormNo.setText(String.valueOf(c.getFormNo()));
         txtName.setText(c.getName() != null ? c.getName() : "");
-        txtFatherName.setText(c.getFname() != null ? c.getFname() : "");
-        txtCnic.setText(c.getIdCard() != null ? c.getIdCard() : "");
-        txtPhone.setText(c.getPhoneNo() != null ? c.getPhoneNo() : "");
-        txtEmail.setText(c.getCandidateEmail() != null ? c.getCandidateEmail() : "");
+        txtFname.setText(c.getFname() != null ? c.getFname() : "");
+        txtIdCard.setText(c.getIdCard() != null ? c.getIdCard() : "");
+        txtPhoneNo.setText(c.getPhoneNo() != null ? c.getPhoneNo() : "");
+        txtCandidateEmail.setText(c.getCandidateEmail() != null ? c.getCandidateEmail() : "");
+        txtCandidatePass.setText(c.getCandidatePass() != null ? c.getCandidatePass() : "");
+        txtFormNo.setText(String.valueOf(c.getFormNo()));
     }
 
-    private void refreshTableData() {
-        // If empty, inject initial demonstration candidates
+    private void updateAssociatedTestsTable(Candidate c) {
+        testData.clear();
+        if (c != null && c.getTest() != null) {
+            testData.addAll(c.getTest());
+        }
+    }
+
+    private void clearFormInputs() {
+        txtName.clear();
+        txtFname.clear();
+        txtIdCard.clear();
+        txtPhoneNo.clear();
+        txtCandidateEmail.clear();
+        txtCandidatePass.clear();
+        txtFormNo.clear();
+        testData.clear();
+    }
+
+    private void refreshCandidateData() {
         if (Candidate.candidates.isEmpty()) {
-            Candidate.candidates.add(new Candidate("Ali Ahmed", "Muhammad Ahmed", "35202-1234567-1", "0300-1234567", 1001, "ali@nts.org.pk", "pass123", "NAT", 90, 850, 60.0f, null, true));
-            Candidate.candidates.add(new Candidate("Fatima Khan", "Tariq Khan", "61101-9876543-2", "0312-9876543", 1002, "fatima@nts.org.pk", "pass123", "GAT", 100, 1350, 50.0f, null, true));
-            Candidate.candidates.add(new Candidate("Usman Raza", "Raza Hussain", "42101-5554443-3", "0333-5554443", 1003, "usman@nts.org.pk", "pass123", "TOEIC", 990, 22000, 45.0f, null, false));
+            Candidate c1 = new Candidate();
+            c1.addBasicData("Ali Ahmed", "Muhammad Ahmed", "3520212345671", "03001234567", 1001, "ali@nts.org.pk", "pass123");
+            ArrayList<Test> tList1 = new ArrayList<>();
+            tList1.add(new Test(101, "NAT-I Aptitude", 90, 850.0, 60.0f));
+            c1.setTest(tList1);
+            c1.applyTest();
+
+            Candidate c2 = new Candidate();
+            c2.addBasicData("Fatima Khan", "Tariq Khan", "6110198765432", "03129876543", 1002, "fatima@nts.org.pk", "pass123");
+            ArrayList<Test> tList2 = new ArrayList<>();
+            tList2.add(new Test(102, "GAT General", 100, 1350.0, 50.0f));
+            c2.setTest(tList2);
+            c2.applyTest();
+
+            Candidate.candidates.add(c1);
+            Candidate.candidates.add(c2);
         }
 
         candidateData.setAll(Candidate.candidates);
-    }
-
-    private void showAlert(Alert.AlertType type, String title, String content) {
-        Alert alert = new Alert(type);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(content);
-        alert.showAndWait();
     }
 }

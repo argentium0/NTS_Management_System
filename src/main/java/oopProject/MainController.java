@@ -29,24 +29,15 @@ public class MainController {
         this.pageSubtitleLabel = pageSubtitleLabel;
     }
 
-    /**
-     * Registers a navigation button associated with a route key.
-     */
     public void registerNavButton(String routeKey, Button button) {
         navButtons.put(routeKey, button);
         button.setOnAction(e -> navigateTo(routeKey));
     }
 
-    /**
-     * Registers a view node associated with a route key.
-     */
     public void registerView(String routeKey, Node viewNode) {
         viewRegistry.put(routeKey, viewNode);
     }
 
-    /**
-     * Navigates to the view identified by routeKey, updating UI state.
-     */
     public void navigateTo(String routeKey) {
         Node targetView = viewRegistry.get(routeKey);
         if (targetView == null) {
@@ -54,10 +45,8 @@ public class MainController {
             return;
         }
 
-        // Inject target view into content area
         contentArea.getChildren().setAll(targetView);
 
-        // Update navigation button active state
         Button targetButton = navButtons.get(routeKey);
         if (targetButton != null) {
             if (activeNavButton != null) {
@@ -69,18 +58,17 @@ public class MainController {
             activeNavButton = targetButton;
         }
 
-        // Update header breadcrumb/titles based on route
         updateHeaderTitles(routeKey);
     }
 
     private void updateHeaderTitles(String routeKey) {
         switch (routeKey.toLowerCase()) {
-            case "dashboard" -> setHeaderTitle("Dashboard", "System Overview & Analytics");
-            case "login" -> setHeaderTitle("Candidate Portal", "Authentic Candidate Login & Entry System");
-            case "admin_matrix" -> setHeaderTitle("Admin Allocation Matrix", "Staff & Test Centre Deployments Overview");
-            case "candidates" -> setHeaderTitle("Candidate Management", "Manage Student Registrations & Applications");
-            case "staff" -> setHeaderTitle("Staff & Duty Management", "Manage Invigilators, Superintendents & Stipends");
-            case "test_centres" -> setHeaderTitle("Test Centre Operations", "Venue Allocation & Team Assignments");
+            case "admin_login" -> setHeaderTitle("Admin Authentication", "Administrator Sign-In & Verification");
+            case "admin_dashboard" -> setHeaderTitle("Admin Dashboard", "System Overview & Settings");
+            case "candidates" -> setHeaderTitle("Candidate Portal", "Mapped to Person -> Candidate Architecture");
+            case "staff" -> setHeaderTitle("Staff Management", "Mapped to Person -> Employee -> Invigilator/Superintendent");
+            case "test_mgmt" -> setHeaderTitle("Test Management", "Mapped to Test Entity Architecture");
+            case "test_centres" -> setHeaderTitle("Test Centre Allocation", "Mapped to TestCentre Entity & Team Management");
             default -> setHeaderTitle("NTS Portal", "National Testing Service Administration");
         }
     }

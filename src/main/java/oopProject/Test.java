@@ -1,40 +1,55 @@
 package oopProject;
 
-import java.util.Scanner;
+import java.util.ArrayList;
 
-public class Test implements TestManagement{
+public class Test implements TestManagement {
 
+    private int testID;
     private String testName;
-    private int testId;
     private int marks;
-    private int charges;
-    private float passing_percentage;
-    private TestCentre centre;
+    private double charges;
+    private float passingPer;
 
-    Test(){
+    public static ArrayList<Test> testList = new ArrayList<>();
 
-        marks=0;
-        this.charges =0;
-        passing_percentage=0;
-        centre = new TestCentre();
-
+    public Test() {
+        this.testID = 0;
+        this.testName = "";
+        this.marks = 0;
+        this.charges = 0.0;
+        this.passingPer = 0.0f;
     }
 
-    public Test(int marks, String testName, int charges, float passing_percentage,TestCentre centre) {
-        this.marks = marks;
+    public Test(int testID, String testName, int marks, double charges, float passingPer) {
+        this.testID = testID;
         this.testName = testName;
+        this.marks = marks;
         this.charges = charges;
-        this.passing_percentage = passing_percentage;
-        this.centre = centre;
+        this.passingPer = passingPer;
+    }
 
+    public Test(int marks, String testName, int charges, float passingPer, TestCentre centre) {
+        this.testID = (int) (Math.random() * 1000);
+        this.testName = testName;
+        this.marks = marks;
+        this.charges = charges;
+        this.passingPer = passingPer;
+    }
+
+    public int getTestID() {
+        return testID;
+    }
+
+    public void setTestID(int testID) {
+        this.testID = testID;
     }
 
     public int getTestId() {
-        return testId;
+        return testID;
     }
 
     public void setTestId(int testId) {
-        this.testId = testId;
+        this.testID = testId;
     }
 
     public String getTestName() {
@@ -53,197 +68,63 @@ public class Test implements TestManagement{
         this.marks = marks;
     }
 
-    public int getCharges() {
+    public double getCharges() {
         return charges;
     }
 
-    public void setCharges(int charges) {
+    public void setCharges(double charges) {
         this.charges = charges;
     }
 
+    public float getPassingPer() {
+        return passingPer;
+    }
+
+    public void setPassingPer(float passingPer) {
+        this.passingPer = passingPer;
+    }
+
     public float getPassing_percentage() {
-        return passing_percentage;
+        return passingPer;
     }
 
     public void setPassing_percentage(float passing_percentage) {
-        this.passing_percentage = passing_percentage;
+        this.passingPer = passing_percentage;
     }
 
-    public TestCentre getCentre() {
-        return centre;
+    public void setter() {}
+
+    public void update(String name, int marks, double charges, float passingPer) {
+        updateTestInfo(name, marks, charges, passingPer);
     }
 
-    public void setCentre(TestCentre centre) {
-        this.centre = centre;
+    public void update() {}
+
+    public void updateTestInfo(String name, int marks, double charges, float passingPer) {
+        this.testName = name;
+        this.marks = marks;
+        this.charges = charges;
+        this.passingPer = passingPer;
     }
 
-    @SuppressWarnings("resource")
-    public void update()
-    {
-        Scanner input = new Scanner(System.in);
-
-        System.out.println("Enter the new name of the test: ");
-        testName = input.nextLine();
-
-        while (true) {
-            try {
-                System.out.println("Enter the new ID of the test: ");
-                testId = input.nextInt();
-                input.nextLine();
-                break;
-            } catch (Exception e) {
-                System.out.println("Invalid Input.Try again.");
-                input.nextLine();
-            }
-        }
-
-
-        while (true) {
-            try {
-                System.out.println("Enter the new total marks of the test: ");
-                marks = input.nextInt();
-                input.nextLine();
-                break;
-            } catch (Exception e) {
-                System.out.println("Invalid Input.Try again.");
-                input.nextLine();
-            }
-        }
-
-            while (true) {
-                try {
-                    System.out.println("Enter the new charges for the test: ");
-                    charges = input.nextInt();
-                    input.nextLine();
-                    break;
-                } catch (Exception e) {
-                    System.out.println("Invalid Input.Try again.");
-                    input.nextLine();
-                }
-
-        }
-
-            while (true) {
-                try {
-                    System.out.println("Enter the new passing percentage for the test: ");
-                    passing_percentage = input.nextFloat();
-                    input.nextLine();
-                    break;
-                } catch (Exception e) {
-                    System.out.println("Invalid Input.Try again.");
-                    input.nextLine();
-                }
-
-            }
+    public void deleteTestInfo() {
+        testList.remove(this);
     }
 
-    @SuppressWarnings("resource")
-    public void setter()
-    {
-        Scanner input = new Scanner(System.in);
-
-        System.out.println("Enter the name of the test: ");
-        testName = input.nextLine();
-
-        while (true) {
-            try {
-                System.out.println("Enter the ID of the test: ");
-                testId = input.nextInt();
-                input.nextLine();
-                break;
-            } catch (Exception e) {
-                System.out.println("Invalid Input.Try again.");
-                input.nextLine();
-            }
-        }
-
-        while (true) {
-            try {
-                System.out.println("Enter total marks of the test: ");
-                marks = input.nextInt();
-                input.nextLine();
-                break;
-            } catch (Exception e) {
-                System.out.println("Invalid Input.Try again.");
-                input.nextLine();
-            }
-        }
-
-        while (true) {
-            try {
-                System.out.println("Enter charges for the test: ");
-                charges = input.nextInt();
-                input.nextLine();
-                break;
-            } catch (Exception e) {
-                System.out.println("Invalid Input.Try again.");
-                input.nextLine();
-            }
-
-        }
-
-        while (true) {
-            try {
-                System.out.println("Enter passing percentage for the test: ");
-                passing_percentage = input.nextFloat();
-                input.nextLine();
-                break;
-            } catch (Exception e) {
-                System.out.println("Invalid Input.Try again.");
-                input.nextLine();
-            }
-
-        }
+    public void display() {
+        displayTestInfo();
     }
 
-    public void display()
-    {
-        System.out.println();
-        System.out.println("Name of the test: "+testName);
-        System.out.println("Total marks of the test: "+marks);
-        System.out.println("Passing percentage for the test: "+passing_percentage+"%");
-        System.out.println("Charges for the test: "+charges+"RS");
-        System.out.println();
+    public void displayTestInfo() {
+        System.out.println("Test ID: " + testID + ", Name: " + testName + ", Marks: " + marks + ", Charges: " + charges + ", Passing %: " + passingPer);
     }
 
     @Override
-    @SuppressWarnings("resource")
+    public void checkTestDetails() {
+        displayTestInfo();
+    }
+
     public void checkAvailableTests() {
-
-        System.out.println("Enter the name of the test to check: ");
-        Scanner sc = new Scanner(System.in);
-        String testTocheck = sc.next();
-
-        if(testTocheck.equalsIgnoreCase("NAT"))
-        {
-            System.out.println();
-            System.out.println("Name of the test: NAT");
-            System.out.println("Total marks of the test: 90");
-            System.out.println("Passing percentage for the test: 60%");
-            System.out.println("Charges for the test: 850RS");
-            System.out.println();
-        }
-        else if (testTocheck.equalsIgnoreCase("GAT"))
-        {
-
-                System.out.println();
-                System.out.println("Name of the test: GAT");
-                System.out.println("Total marks of the test: 100");
-                System.out.println("Passing percentage for the test: 50%");
-                System.out.println("Charges for the test: 1350RS");
-                System.out.println();
-
-        } else if (testTocheck.equalsIgnoreCase("TOEIC")) {
-            {
-                System.out.println();
-                System.out.println("Name of the test: TOEIC");
-                System.out.println("Total marks of the test: 990Points");
-                System.out.println("Passing percentage for the test: 45%");
-                System.out.println("Charges for the test: 22000RS");
-                System.out.println();
-            }
-
-        }
+        checkTestDetails();
     }
 }
-

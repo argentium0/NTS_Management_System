@@ -1,71 +1,53 @@
 package oopProject;
 
 import java.util.ArrayList;
-import java.util.Scanner;
 
 public class TestCentre implements TestCentreTeamManagement {
 
     private int testCentreNo;
-    private String testCentreCity;
-    private String buildingType;
+    private String testCentreBuilding;
+    private String testCentreAdress;
     private String allocationDate;
     private ArrayList<Invigilator> invigilators = new ArrayList<>();
-    private Invigilator invigilator;
-    private Superintendent spd;
-    private final ArrayList<Superintendent> superintendents = new ArrayList<>();
+    private ArrayList<Superintendent> superintendents = new ArrayList<>();
+    private Test test;
 
-    public ArrayList<Superintendent> getSuperintendents() {
-        return superintendents;
+    public static ArrayList<TestCentre> testCentres = new ArrayList<>();
+
+    public TestCentre() {
+        this.testCentreNo = 0;
+        this.testCentreBuilding = "";
+        this.testCentreAdress = "";
+        this.allocationDate = "";
+        this.invigilators = new ArrayList<>();
+        this.superintendents = new ArrayList<>();
+        this.test = new Test();
     }
 
-    public String getTestCentreCity() {
-        return testCentreCity;
-    }
-
-    public void setTestCentreCity(String testCentreCity) {
-        this.testCentreCity = testCentreCity;
-    }
-
-    public Superintendent getSpd() {
-        return spd;
-    }
-
-    public void setSpd(Superintendent spd) {
-        this.spd = spd;
-    }
-
-    public ArrayList<Invigilator> getInvigilators() {
-        return invigilators;
-    }
-
-    public void setInvigilators(ArrayList<Invigilator> invigilators) {
-        this.invigilators = invigilators;
-    }
-
-    TestCentre() {
-        testCentreNo = 0;
-        buildingType = "";
-        allocationDate = "";
-        invigilators = new ArrayList<>();
-        invigilator = new Invigilator();
-        spd = new Superintendent();
-    }
-
-    public TestCentre(int testCentreNo, String buildingType, String allocationDate, String n, String fn, String id, String phone, int employeeNo, String city, String des, String supervisor, Double invig_allowance, Double spdt_allowance, int interval,Invigilator[] invs) {
+    public TestCentre(int testCentreNo, String testCentreBuilding, String testCentreAdress, String allocationDate) {
         this.testCentreNo = testCentreNo;
-        this.buildingType = buildingType;
+        this.testCentreBuilding = testCentreBuilding;
+        this.testCentreAdress = testCentreAdress;
         this.allocationDate = allocationDate;
-        invigilators = new ArrayList<>();
-        spd = new Superintendent(n, fn, id, phone, employeeNo, city, invig_allowance, spdt_allowance, interval);
-
+        this.invigilators = new ArrayList<>();
+        this.superintendents = new ArrayList<>();
+        this.test = new Test();
     }
 
-    public Invigilator getInvigilator() {
-        return invigilator;
-    }
-
-    public void setInvigilator(Invigilator invigilator) {
-        this.invigilator = invigilator;
+    public TestCentre(int testCentreNo, String buildingType, String allocationDate, String n, String fn, String id, String phone, int employeeNo, String city, String des, String supervisor, Double invig_allowance, Double spdt_allowance, int interval, Invigilator[] invs) {
+        this.testCentreNo = testCentreNo;
+        this.testCentreBuilding = buildingType;
+        this.testCentreAdress = city;
+        this.allocationDate = allocationDate;
+        this.invigilators = new ArrayList<>();
+        this.superintendents = new ArrayList<>();
+        if (invs != null) {
+            for (Invigilator inv : invs) {
+                this.invigilators.add(inv);
+            }
+        }
+        Superintendent spd = new Superintendent(n, fn, id, phone, employeeNo, city, invig_allowance, spdt_allowance, interval);
+        this.superintendents.add(spd);
     }
 
     public int getTestCentreNo() {
@@ -76,12 +58,36 @@ public class TestCentre implements TestCentreTeamManagement {
         this.testCentreNo = testCentreNo;
     }
 
+    public String getTestCentreBuilding() {
+        return testCentreBuilding;
+    }
+
+    public void setTestCentreBuilding(String testCentreBuilding) {
+        this.testCentreBuilding = testCentreBuilding;
+    }
+
+    public String getTestCentreAdress() {
+        return testCentreAdress;
+    }
+
+    public void setTestCentreAdress(String testCentreAdress) {
+        this.testCentreAdress = testCentreAdress;
+    }
+
     public String getBuildingType() {
-        return buildingType;
+        return testCentreBuilding;
     }
 
     public void setBuildingType(String buildingType) {
-        this.buildingType = buildingType;
+        this.testCentreBuilding = buildingType;
+    }
+
+    public String getTestCentreCity() {
+        return testCentreAdress;
+    }
+
+    public void setTestCentreCity(String testCentreCity) {
+        this.testCentreAdress = testCentreCity;
     }
 
     public String getAllocationDate() {
@@ -92,104 +98,92 @@ public class TestCentre implements TestCentreTeamManagement {
         this.allocationDate = allocationDate;
     }
 
-    @SuppressWarnings("resource")
-    public void setter() {
+    public ArrayList<Invigilator> getInvigilators() {
+        return invigilators;
+    }
 
-        Scanner input = new Scanner(System.in);
-        while (true) {
-            try {
-                System.out.println("Enter the test Centre no: ");
-                testCentreNo = input.nextInt();
-                input.nextLine();
-                break;
-            } catch (Exception e) {
-                System.out.println("Invalid Input.Try again.");
-                input.nextLine();
-            }
+    public void setInvigilators(ArrayList<Invigilator> invigilators) {
+        this.invigilators = invigilators;
+    }
 
+    public ArrayList<Superintendent> getSuperintendents() {
+        return superintendents;
+    }
+
+    public void setSuperintendents(ArrayList<Superintendent> superintendents) {
+        this.superintendents = superintendents;
+    }
+
+    public Test getTest() {
+        return test;
+    }
+
+    public void setTest(Test test) {
+        this.test = test;
+    }
+
+    public Superintendent getSpd() {
+        if (superintendents != null && !superintendents.isEmpty()) {
+            return superintendents.get(0);
         }
-        System.out.println("Enter the test Centre building : ");
-        buildingType = input.nextLine();
-        System.out.println("Enter the test centre city: ");
-        testCentreCity = input.nextLine();
-        System.out.println("Enter the date of allocation: ");
-        allocationDate = input.nextLine();
+        return null;
+    }
 
+    public void setSpd(Superintendent spd) {
+        if (this.superintendents == null) {
+            this.superintendents = new ArrayList<>();
+        }
+        this.superintendents.clear();
+        if (spd != null) {
+            this.superintendents.add(spd);
+        }
+    }
+
+    public void setter() {}
+
+    public void update(int no, String building, String adress, String date) {
+        this.testCentreNo = no;
+        this.testCentreBuilding = building;
+        this.testCentreAdress = adress;
+        this.allocationDate = date;
+    }
+
+    public void update() {}
+
+    public void delete() {
+        testCentres.remove(this);
     }
 
     public void display() {
-        System.out.println();
-        System.out.println("Test Centre no: " + testCentreNo);
-        System.out.println("Test Centre building : " + buildingType);
-        System.out.println("Test centre city: " + testCentreCity);
-        System.out.println("Date of allocation: " + allocationDate);
-        System.out.println();
-    }
-
-    @SuppressWarnings("resource")
-    public void update() {
-        Scanner input = new Scanner(System.in);
-        while (true) {
-            try {
-                System.out.println("Enter the new test Centre no: ");
-                testCentreNo = input.nextInt();
-                input.nextLine();
-                break;
-            } catch (Exception e) {
-                System.out.println("Invalid Input.Try again.");
-                input.nextLine();
-            }
-
-        }
-        System.out.println("Enter the new test Centre building : ");
-        buildingType = input.nextLine();
-        System.out.println("Enter the new test centre city: ");
-        testCentreCity = input.nextLine();
-        System.out.println("Enter the new date of allocation: ");
-        allocationDate = input.nextLine();
+        System.out.println("Test Centre #: " + testCentreNo + ", Building: " + testCentreBuilding + ", Address: " + testCentreAdress + ", Date: " + allocationDate);
     }
 
     @Override
-    public void showSupervisorDetails() {
+    public void addSuperintendent() {}
 
-        System.out.println("Supervisor Name: " + spd.name);
-        System.out.println("Father name: " + spd.fname);
-        System.out.println("CNIC: " + spd.idCard);
-        System.out.println("Phone No: " + spd.phoneNo);
-    }
-
-    @Override
     public void addSupervisor() {
+        addSuperintendent();
+    }
 
-        System.out.println("Input supervisor data");
-        spd.setter();
-        superintendents.add(spd);
+    public void showSupervisorDetails() {
+        Superintendent spd = getSpd();
+        if (spd != null) {
+            spd.display();
+        }
     }
 
     @Override
-    @SuppressWarnings("resource")
-    public void addInvigilators() {
+    public void addInvigilators() {}
 
-        int amountToAdd=0;
-
-        Scanner input = new Scanner(System.in);
-        while (true) {
-            try {
-                System.out.println("Enter the no of invigilators to add: ");
-                amountToAdd = input.nextInt();
-                input.nextLine();
-                break;
-            } catch (Exception e) {
-                System.out.println("Invalid Input.Try again.");
-                input.nextLine();
-            }
-
+    public void addInvigilator(Invigilator inv) {
+        if (inv != null) {
+            invigilators.add(inv);
         }
+    }
 
-        for(int i=0;i<amountToAdd;i++)
-        {
-            System.out.println("Enter details for invigilator number "+(i+1));
-            invigilators.add(invigilator);
+    public void addSuperintendent(Superintendent spd) {
+        if (spd != null) {
+            superintendents.add(spd);
         }
     }
 }

@@ -1,6 +1,6 @@
 package oopProject;
 
-abstract class Person {
+public abstract class Person {
 
     protected String name;
     protected String fname;
