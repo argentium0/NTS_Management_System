@@ -2,4 +2,7 @@ target/
 out/
 .idea/
 *.class
+*.db
+*.db-wal
+*.db-shm
 PAT_antigravity_github.txt

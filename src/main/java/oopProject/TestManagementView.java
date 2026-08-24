@@ -9,6 +9,7 @@ import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import java.util.List;
 
 /**
  * TestManagementView mapped 1:1 to Test UML class architecture.
@@ -150,11 +151,13 @@ public class TestManagementView extends VBox {
         testTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
     }
 
+    private final TestDAO testDAO = new TestDAO();
+
     // Action Handlers mapping UML methods 1:1
     private void handleUpdateTestInfo() {
         Test selected = testTable.getSelectionModel().getSelectedItem();
         if (selected == null) {
-            // Save new Test
+            // Save new Test to SQLite
             try {
                 int testID = Integer.parseInt(txtTestID.getText().trim());
                 String name = txtTestName.getText().trim();
@@ -163,11 +166,10 @@ public class TestManagementView extends VBox {
                 float passing = Float.parseFloat(txtPassingPer.getText().trim());
 
                 Test newTest = new Test(testID, name, marks, charges, passing);
-                Test.testList.add(newTest);
-                testData.add(newTest);
-                testTable.getSelectionModel().select(newTest);
+                testDAO.addTest(newTest);
+                refreshTestData();
 
-                DialogHelper.showInformation("Test Management", "updateTestInfo() Executed", "New test created: " + name + " (ID: " + testID + ")");
+                DialogHelper.showInformation("Test Management", "updateTestInfo() Executed", "New test created in SQLite: " + name + " (ID: " + testID + ")");
             } catch (Exception e) {
                 DialogHelper.showError("Input Error", "Invalid Form Data", e.getMessage());
             }
@@ -183,9 +185,10 @@ public class TestManagementView extends VBox {
 
             selected.setTestID(testID);
             selected.updateTestInfo(name, marks, charges, passing);
-            testTable.refresh();
+            testDAO.updateTest(selected);
+            refreshTestData();
 
-            DialogHelper.showInformation("Test Management", "updateTestInfo() Executed", "Test info updated successfully for: " + name);
+            DialogHelper.showInformation("Test Management", "updateTestInfo() Executed", "Test info updated in SQLite for: " + name);
         } catch (Exception e) {
             DialogHelper.showError("Input Error", "Invalid Form Data", e.getMessage());
         }
@@ -199,10 +202,10 @@ public class TestManagementView extends VBox {
         }
 
         DialogHelper.showConfirmation("Confirm Deletion", "Delete Test Record", "Delete test: " + selected.getTestName() + " (ID: " + selected.getTestID() + ")?", () -> {
-            selected.deleteTestInfo();
-            testData.remove(selected);
+            testDAO.deleteTest(selected.getTestID());
+            refreshTestData();
             clearFormInputs();
-            DialogHelper.showInformation("Test Management", "deleteTestInfo() Executed", "Test record deleted successfully.");
+            DialogHelper.showInformation("Test Management", "deleteTestInfo() Executed", "Test record deleted from SQLite successfully.");
         });
     }
 
@@ -239,12 +242,14 @@ public class TestManagementView extends VBox {
     }
 
     private void refreshTestData() {
-        if (Test.testList.isEmpty()) {
-            Test.testList.add(new Test(101, "NAT-I Aptitude Test", 90, 850.0, 60.0f));
-            Test.testList.add(new Test(102, "GAT General Test", 100, 1350.0, 50.0f));
-            Test.testList.add(new Test(103, "TOEIC English Test", 990, 22000.0, 45.0f));
+        List<Test> dbTests = testDAO.getAllTests();
+        if (dbTests.isEmpty()) {
+            testDAO.addTest(new Test(101, "NAT-I Aptitude Test", 90, 850.0, 60.0f));
+            testDAO.addTest(new Test(102, "GAT General Test", 100, 1350.0, 50.0f));
+            testDAO.addTest(new Test(103, "TOEIC English Test", 990, 22000.0, 45.0f));
+            dbTests = testDAO.getAllTests();
         }
 
-        testData.setAll(Test.testList);
+        testData.setAll(dbTests);
     }
 }

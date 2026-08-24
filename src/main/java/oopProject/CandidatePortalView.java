@@ -11,6 +11,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * CandidatePortalView mapped 1:1 to Person -> Candidate UML architecture.
@@ -212,6 +213,8 @@ public class CandidatePortalView extends VBox {
         testTableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
     }
 
+    private final CandidateDAO candidateDAO = new CandidateDAO();
+
     // 1:1 Action Button Handlers mapping UML methods
     private void handleAddBasicData() {
         try {
@@ -225,11 +228,13 @@ public class CandidatePortalView extends VBox {
 
             Candidate c = new Candidate();
             c.addBasicData(name, fname, idCard, phoneNo, formNo, email, pass);
-            Candidate.candidates.add(c);
+            
+            // Persist to SQLite Database via CandidateDAO
+            candidateDAO.addCandidate(c);
 
             refreshCandidateData();
             candidateMasterTable.getSelectionModel().select(c);
-            DialogHelper.showInformation("Candidate Portal", "Add Basic Data Executed", "Candidate basic data created successfully for Form #" + formNo);
+            DialogHelper.showInformation("Candidate Portal", "Add Basic Data Executed", "Candidate basic data created and saved to SQLite for Form #" + formNo);
         } catch (Exception e) {
             DialogHelper.showError("Validation Error", "Invalid Input", e.getMessage());
         }
@@ -253,8 +258,11 @@ public class CandidatePortalView extends VBox {
 
             selected.updateCandidateInfo(name, fname, idCard, phoneNo, formNo, email, pass);
 
-            candidateMasterTable.refresh();
-            DialogHelper.showInformation("Candidate Portal", "Update Candidate Info Executed", "Candidate info updated successfully for Form #" + formNo);
+            // Update in SQLite Database via CandidateDAO
+            candidateDAO.updateCandidate(selected);
+
+            refreshCandidateData();
+            DialogHelper.showInformation("Candidate Portal", "Update Candidate Info Executed", "Candidate info updated in SQLite for Form #" + formNo);
         } catch (Exception e) {
             DialogHelper.showError("Validation Error", "Invalid Input", e.getMessage());
         }
@@ -268,10 +276,11 @@ public class CandidatePortalView extends VBox {
         }
 
         DialogHelper.showConfirmation("Confirm Deletion", "Delete Candidate", "Delete candidate record for Form #" + selected.getFormNo() + "?", () -> {
-            selected.deleteCandidate();
+            // Delete from SQLite Database via CandidateDAO
+            candidateDAO.deleteCandidate(selected.getIdCard());
             refreshCandidateData();
             clearFormInputs();
-            DialogHelper.showInformation("Candidate Portal", "Delete Candidate Executed", "Candidate deleted successfully.");
+            DialogHelper.showInformation("Candidate Portal", "Delete Candidate Executed", "Candidate deleted from SQLite successfully.");
         });
     }
 
@@ -344,25 +353,19 @@ public class CandidatePortalView extends VBox {
     }
 
     private void refreshCandidateData() {
-        if (Candidate.candidates.isEmpty()) {
+        List<Candidate> dbCandidates = candidateDAO.getAllCandidates();
+        if (dbCandidates.isEmpty()) {
             Candidate c1 = new Candidate();
             c1.addBasicData("Ali Ahmed", "Muhammad Ahmed", "3520212345671", "03001234567", 1001, "ali@nts.org.pk", "pass123");
-            ArrayList<Test> tList1 = new ArrayList<>();
-            tList1.add(new Test(101, "NAT-I Aptitude", 90, 850.0, 60.0f));
-            c1.setTest(tList1);
-            c1.applyTest();
+            candidateDAO.addCandidate(c1);
 
             Candidate c2 = new Candidate();
             c2.addBasicData("Fatima Khan", "Tariq Khan", "6110198765432", "03129876543", 1002, "fatima@nts.org.pk", "pass123");
-            ArrayList<Test> tList2 = new ArrayList<>();
-            tList2.add(new Test(102, "GAT General", 100, 1350.0, 50.0f));
-            c2.setTest(tList2);
-            c2.applyTest();
+            candidateDAO.addCandidate(c2);
 
-            Candidate.candidates.add(c1);
-            Candidate.candidates.add(c2);
+            dbCandidates = candidateDAO.getAllCandidates();
         }
 
-        candidateData.setAll(Candidate.candidates);
+        candidateData.setAll(dbCandidates);
     }
 }

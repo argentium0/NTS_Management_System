@@ -24,6 +24,14 @@ public class DatabaseManager {
     private static final String DB_URL = "jdbc:sqlite:nts_database.db";
     private static DatabaseManager instance;
 
+    static {
+        try {
+            Class.forName("org.sqlite.JDBC");
+        } catch (ClassNotFoundException e) {
+            System.err.println("[DatabaseManager] SQLite JDBC Driver not found: " + e.getMessage());
+        }
+    }
+
     private DatabaseManager() {
         initializeDatabase();
     }

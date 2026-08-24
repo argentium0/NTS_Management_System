@@ -170,7 +170,8 @@ public class AdminDashboard extends VBox {
             String nPass = txtNewPass.getText().trim();
             String cPass = txtConfirmPass.getText().trim();
 
-            if (!activeAdminPassword.equals(curr)) {
+            AdminDAO adminDAO = new AdminDAO();
+            if (!adminDAO.validateAdmin(activeAdminUsername, curr)) {
                 lblMsg.setText("Current password is incorrect.");
                 lblMsg.setStyle("-fx-text-fill: #ED6B6B;");
                 return;
@@ -186,9 +187,14 @@ public class AdminDashboard extends VBox {
                 return;
             }
 
-            activeAdminPassword = nPass;
-            DialogHelper.showSuccess("Security Update", "Password Changed", "Admin password successfully updated.");
-            modalStage.close();
+            if (adminDAO.updatePassword(activeAdminUsername, nPass)) {
+                activeAdminPassword = nPass;
+                DialogHelper.showSuccess("Security Update", "Password Changed", "Admin password successfully updated in SQLite database.");
+                modalStage.close();
+            } else {
+                lblMsg.setText("Database error updating password.");
+                lblMsg.setStyle("-fx-text-fill: #ED6B6B;");
+            }
         });
 
         btnBox.getChildren().addAll(btnCancel, btnSave);

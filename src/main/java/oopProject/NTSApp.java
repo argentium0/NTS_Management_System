@@ -14,6 +14,9 @@ public class NTSApp extends Application {
 
     @Override
     public void start(Stage primaryStage) {
+        // Initialize SQLite Database Singleton Connection & Schemas
+        DatabaseManager.getInstance();
+
         // Construct foundational UI shell
         MainLayout mainLayout = new MainLayout();
 

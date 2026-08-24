@@ -7,6 +7,7 @@ import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import java.util.List;
 
 /**
  * TestCentreAllocationView mapped 1:1 to TestCentre UML class architecture.
@@ -285,10 +286,12 @@ public class TestCentreAllocationView extends VBox {
         DialogHelper.showInformation("Test Centre", "Test Associated", "Test " + test.getTestName() + " assigned to Centre #" + selected.getTestCentreNo());
     }
 
+    private final TestCentreDAO testCentreDAO = new TestCentreDAO();
+
     private void handleUpdate() {
         TestCentre selected = centreMasterTable.getSelectionModel().getSelectedItem();
         if (selected == null) {
-            // Save new TestCentre
+            // Save new TestCentre to SQLite
             try {
                 int no = Integer.parseInt(txtTestCentreNo.getText().trim());
                 String building = txtTestCentreBuilding.getText().trim();
@@ -296,11 +299,10 @@ public class TestCentreAllocationView extends VBox {
                 String date = txtAllocationDate.getText().trim();
 
                 TestCentre tc = new TestCentre(no, building, adress, date);
-                TestCentre.testCentres.add(tc);
-                centreData.add(tc);
-                centreMasterTable.getSelectionModel().select(tc);
+                testCentreDAO.addTestCentre(tc);
+                refreshMasterData();
 
-                DialogHelper.showInformation("Test Centre", "update() Executed", "New Test Centre #" + no + " created successfully.");
+                DialogHelper.showInformation("Test Centre", "update() Executed", "New Test Centre #" + no + " created in SQLite successfully.");
             } catch (Exception e) {
                 DialogHelper.showError("Input Error", "Invalid Form Data", e.getMessage());
             }
@@ -314,9 +316,10 @@ public class TestCentreAllocationView extends VBox {
             String date = txtAllocationDate.getText().trim();
 
             selected.update(no, building, adress, date);
-            centreMasterTable.refresh();
+            testCentreDAO.updateTestCentre(selected);
+            refreshMasterData();
 
-            DialogHelper.showInformation("Test Centre", "update() Executed", "Test Centre #" + no + " updated successfully.");
+            DialogHelper.showInformation("Test Centre", "update() Executed", "Test Centre #" + no + " updated in SQLite successfully.");
         } catch (Exception e) {
             DialogHelper.showError("Input Error", "Invalid Form Data", e.getMessage());
         }
@@ -330,10 +333,10 @@ public class TestCentreAllocationView extends VBox {
         }
 
         DialogHelper.showConfirmation("Confirm Deletion", "Delete Test Centre", "Delete Test Centre #" + selected.getTestCentreNo() + "?", () -> {
-            selected.delete();
-            centreData.remove(selected);
+            testCentreDAO.deleteTestCentre(selected.getTestCentreNo());
+            refreshMasterData();
             clearFormInputs();
-            DialogHelper.showInformation("Test Centre", "delete() Executed", "Test Centre deleted successfully.");
+            DialogHelper.showInformation("Test Centre", "delete() Executed", "Test Centre deleted from SQLite successfully.");
         });
     }
 
@@ -373,22 +376,24 @@ public class TestCentreAllocationView extends VBox {
     }
 
     private void refreshMasterData() {
-        if (TestCentre.testCentres.isEmpty()) {
+        List<TestCentre> dbCentres = testCentreDAO.getAllTestCentres();
+        if (dbCentres.isEmpty()) {
             TestCentre tc1 = new TestCentre(101, "University Campus Hall A", "Lahore", "2026-09-15");
             tc1.addSuperintendent(new Superintendent("Dr. Hamza Malik", "Muhammad Malik", "35202-1234567-1", "03001234567", 501, "Lahore", 1200.0f, 10, 0.0, 15000.0, 6));
             tc1.addInvigilator(new Invigilator("Saima Rashid", "Rashid Ahmed", "35202-5551122-1", "03215551122", 601, "Lahore", 500.0f, 4, 8500.0, 0.0, "Senior Invigilator", "Dr. Hamza Malik", 3001234567L));
             tc1.setTest(new Test(101, "NAT-I Aptitude Test", 90, 850.0, 60.0f));
+            testCentreDAO.addTestCentre(tc1);
 
             TestCentre tc2 = new TestCentre(102, "Federal College Complex", "Islamabad", "2026-09-15");
             tc2.addSuperintendent(new Superintendent("Prof. Tariq Mahmood", "Mahmood Khan", "61101-7778899-3", "03127778899", 502, "Islamabad", 1500.0f, 12, 0.0, 18000.0, 12));
             tc2.addInvigilator(new Invigilator("Usman Ali", "Ali Asghar", "61101-4445566-4", "03004445566", 603, "Islamabad", 600.0f, 5, 7500.0, 0.0, "Invigilator", "Prof. Tariq Mahmood", 3127778899L));
             tc2.setTest(new Test(102, "GAT General Test", 100, 1350.0, 50.0f));
+            testCentreDAO.addTestCentre(tc2);
 
-            TestCentre.testCentres.add(tc1);
-            TestCentre.testCentres.add(tc2);
+            dbCentres = testCentreDAO.getAllTestCentres();
         }
 
-        centreData.setAll(TestCentre.testCentres);
+        centreData.setAll(dbCentres);
 
         // Populate ComboBox dropdown options
         cbSuperintendentSelection.getItems().clear();

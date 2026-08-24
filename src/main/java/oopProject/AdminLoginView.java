@@ -116,8 +116,9 @@ public class AdminLoginView extends VBox {
             return;
         }
 
-        // Validate credentials (default: admin / admin123 or active password)
-        if (AdminDashboard.validateAdminCredentials(username, password)) {
+        // Validate credentials against SQLite Admins table using AdminDAO
+        AdminDAO adminDAO = new AdminDAO();
+        if (adminDAO.validateAdmin(username, password)) {
             lblErrorMessage.setVisible(false);
             if (loginSuccessListener != null) {
                 loginSuccessListener.onLoginSuccess(username);

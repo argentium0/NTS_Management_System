@@ -9,6 +9,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import java.util.List;
 
 /**
  * StaffManagementView mapped 1:1 to Person -> Employee -> Invigilator/Superintendent UML architecture.
@@ -264,10 +265,12 @@ public class StaffManagementView extends VBox {
         DialogHelper.showInformation("AllowanceManagement Interface", "getAllowance() Executed", "Employee: " + selected.getName() + "\nInvigilator Allowance: Rs. " + selected.getInvig_allowance() + "\nSuperintendent Allowance: Rs. " + selected.getSpdt_allowance());
     }
 
+    private final StaffDAO staffDAO = new StaffDAO();
+
     private void handleUpdate() {
         Employee selected = staffTable.getSelectionModel().getSelectedItem();
         if (selected == null) {
-            // If not selected, save a new Employee
+            // If not selected, save a new Employee to SQLite
             try {
                 int empID = Integer.parseInt(txtEmployeeID.getText().trim());
                 String name = txtName.getText().trim();
@@ -280,20 +283,20 @@ public class StaffManagementView extends VBox {
                 double invig = Double.parseDouble(txtInvigAllowance.getText().trim());
                 double spdt = Double.parseDouble(txtSpdtAllowance.getText().trim());
 
-                Employee emp;
                 if (rbInvigilator.isSelected()) {
                     String des = txtDesignation.getText().trim();
                     String supName = txtSuperintendentName.getText().trim();
                     Long supPhone = Long.parseLong(txtSupdtPhone.getText().trim());
-                    emp = new Invigilator(name, fname, cnic, phone, empID, city, allow, exp, invig, spdt, des, supName, supPhone);
+                    Invigilator inv = new Invigilator(name, fname, cnic, phone, empID, city, allow, exp, invig, spdt, des, supName, supPhone);
+                    staffDAO.addInvigilator(inv);
                 } else {
                     int interval = Integer.parseInt(txtInterval.getText().trim());
-                    emp = new Superintendent(name, fname, cnic, phone, empID, city, allow, exp, invig, spdt, interval);
+                    Superintendent spd = new Superintendent(name, fname, cnic, phone, empID, city, allow, exp, invig, spdt, interval);
+                    staffDAO.addSuperintendent(spd);
                 }
 
-                staffData.add(emp);
-                staffTable.getSelectionModel().select(emp);
-                DialogHelper.showInformation("Staff Management", "update() Executed", "New staff member saved successfully.");
+                refreshStaffData();
+                DialogHelper.showInformation("Staff Management", "update() Executed", "New staff member saved to SQLite successfully.");
             } catch (Exception e) {
                 DialogHelper.showError("Input Error", "Invalid Form Data", e.getMessage());
             }
@@ -316,13 +319,14 @@ public class StaffManagementView extends VBox {
                 inv.setDesignation(txtDesignation.getText().trim());
                 inv.setSuperintendentName(txtSuperintendentName.getText().trim());
                 inv.setSupdtPhone(Long.parseLong(txtSupdtPhone.getText().trim()));
+                staffDAO.updateInvigilator(inv);
             } else if (selected instanceof Superintendent spd) {
                 spd.setInterval(Integer.parseInt(txtInterval.getText().trim()));
+                staffDAO.updateSuperintendent(spd);
             }
 
-            selected.update();
-            staffTable.refresh();
-            DialogHelper.showInformation("Staff Management", "update() Executed", "Staff member updated successfully.");
+            refreshStaffData();
+            DialogHelper.showInformation("Staff Management", "update() Executed", "Staff member updated in SQLite successfully.");
         } catch (Exception e) {
             DialogHelper.showError("Input Error", "Invalid Form Data", e.getMessage());
         }
@@ -337,13 +341,13 @@ public class StaffManagementView extends VBox {
 
         DialogHelper.showConfirmation("Confirm Deletion", "Delete Staff Record", "Remove staff member " + selected.getName() + " (ID: " + selected.getEmployeeID() + ")?", () -> {
             if (selected instanceof Invigilator inv) {
-                inv.delete();
+                staffDAO.deleteInvigilator(inv.getEmployeeID());
             } else if (selected instanceof Superintendent spd) {
-                spd.delete();
+                staffDAO.deleteSuperintendent(spd.getEmployeeID());
             }
-            staffData.remove(selected);
+            refreshStaffData();
             clearFormInputs();
-            DialogHelper.showInformation("Staff Management", "delete() Executed", "Staff record deleted successfully.");
+            DialogHelper.showInformation("Staff Management", "delete() Executed", "Staff record deleted from SQLite successfully.");
         });
     }
 
@@ -390,12 +394,22 @@ public class StaffManagementView extends VBox {
     }
 
     private void refreshStaffData() {
-        if (staffData.isEmpty()) {
+        List<Invigilator> invs = staffDAO.getAllInvigilators();
+        List<Superintendent> spds = staffDAO.getAllSuperintendents();
+
+        if (invs.isEmpty() && spds.isEmpty()) {
             Invigilator inv1 = new Invigilator("Saima Rashid", "Rashid Ahmed", "35202-5551122-1", "03215551122", 601, "Lahore", 500.0f, 4, 8500.0, 0.0, "Senior Invigilator", "Dr. Hamza Malik", 3001234567L);
             Superintendent spd1 = new Superintendent("Dr. Hamza Malik", "Muhammad Malik", "35202-1234567-1", "03001234567", 501, "Lahore", 1200.0f, 10, 0.0, 15000.0, 6);
 
-            staffData.add(inv1);
-            staffData.add(spd1);
+            staffDAO.addInvigilator(inv1);
+            staffDAO.addSuperintendent(spd1);
+
+            invs = staffDAO.getAllInvigilators();
+            spds = staffDAO.getAllSuperintendents();
         }
+
+        staffData.clear();
+        staffData.addAll(invs);
+        staffData.addAll(spds);
     }
 }
