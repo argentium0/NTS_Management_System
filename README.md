@@ -8,7 +8,6 @@
 [![JavaFX](https://img.shields.io/badge/JavaFX-22.0.2-FF6F00?style=for-the-badge&logo=java&logoColor=white)](https://openjfx.io/)
 [![Maven](https://img.shields.io/badge/Maven-3.9.15-C71A36?style=for-the-badge&logo=apachemaven&logoColor=white)](https://maven.apache.org/)
 [![Architecture](https://img.shields.io/badge/Architecture-OOP%20%2F%20Clean%20Code-4CAF50?style=for-the-badge)](https://github.com/argentium0/NTS_Management_System)
-[![License](https://img.shields.io/badge/License-MIT-9E9E9E?style=for-the-badge)](LICENSE)
 
 </div>
 
@@ -16,7 +15,19 @@
 
 ## 📖 Overview
 
-The **NTS Management System** is a modern, enterprise-grade desktop application built with JavaFX and Java 22. It provides an all-in-one portal for the National Testing Service (NTS), enabling candidate registrations, exam schedule management, test centre allocation, and staff duty assignments (Superintendents & Invigilators) nationwide.
+The **NTS Management System** is a modern, enterprise-grade desktop application built with JavaFX and Java 22. It provides an all-in-one administrative and candidate portal for the National Testing Service (NTS), enabling candidate registrations, exam schedule management, test centre allocation, and staff duty assignments (Superintendents & Invigilators) nationwide.
+
+---
+
+## 🏛️ About NTS (National Testing Service)
+
+The **National Testing Service (NTS)** is Pakistan's premier testing and assessment organization, established in July 2002 to promote meritocracy and standardized evaluation in education and employment.
+
+### Key Objectives & Operations:
+* **Standardized Testing**: Conducts nationwide standardized examinations including the **National Aptitude Test (NAT)** for undergraduate admissions, the **Graduate Assessment Test (GAT)** for postgraduate studies and Ph.D. admissions, and international assessments like **TOEIC**.
+* **Merit-Based Recruitment**: Provides screening and recruitment assessment testing services for federal, provincial government departments, autonomous bodies, and private sector organizations across Pakistan.
+* **Scholarship & Financial Aid Evaluation**: Administers tests for national and international higher education scholarships and fellowship grants.
+* **Nationwide Infrastructure**: Manages a wide network of secure examination test centers across all major cities and provinces of Pakistan.
 
 ---
 
@@ -72,9 +83,3 @@ The application adheres strictly to the official NTS high-contrast visual identi
    ```powershell
    .\mvn javafx:run
    ```
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License — see the LICENSE file for details.
